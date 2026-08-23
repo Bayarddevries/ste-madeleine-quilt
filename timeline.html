@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ste. Madeleine — From Ashes to Honour</title>
+  <!--
+    Timeline: Ste. Madeleine Métis heritage site — devastation → reclamation
+    Sources:
+      - MMF Spotlight: "From ashes to honour: Red River Métis reclaim Ste. Madeleine" (July 25, 2024)
+        https://www.mmf.mb.ca/mmf-spotlight/from-ashes-to-honour-red-river-metis-reclaim-ste-madeleine
+      - CBC: "Ste. Madeleine land transfer returns 100 acres to Métis" (July 19, 2024)
+        https://www.cbc.ca/news/canada/manitoba/ste-madeleine-manitoba-m%C3%A9tis-land-transfer-1.7268948
+      - APTN: "Metis community thrives despite being burned to the ground"
+        https://www.aptnnews.ca/national-news/metis-community-thrives-despite-being-burned-to-the-ground-to-make-room-for-cattle/
+      - Metis Archive: "Historic Manitoba Métis Settlements" by Lawrence Barkwell, Louis Riel Institute, 2016
+      - Metis Archive: "Ste. Madeleine — Community Without a Town: Métis Elders in Interview"
+        Kanawayihtamaahk li taan paassii: Preserving Our Past—Ste. Madeelene, Manitoba
+        Pemmican Publications Inc., 1987
+      - Metis Archive: foodways-and-harvest.md (concepts/daily-life)
+    Media manifest: media/timeline/media-manifest.json
+    Admin mode: add ?edit to the URL to open the image assignment panel
+  -->
+  <style>
+    :root {
+      --bg: #0a1a14;
+      --panel: #1a2a22;
+      --panel-raised: #223729;
+      --text: #e8e0d0;
+      --text-dim: #b8b0a0;
+      --accent: #e8b84a;
+      --accent-glow: #e8b84a33;
+      --border: #3a4a40;
+      --red-accent: #c04a52;
+      --green-accent: #4a9a5a;
+      --timeline-track: #2a3a30;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      padding: 20px;
+    }
+    /* ===== Layout ===== */
+    .timeline-container {
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      padding: 40px 0;
+    }
+    /* Vertical timeline line */
+    .timeline-line {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 4px;
+      background: var(--timeline-track);
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .timeline-line::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      background: linear-gradient(180deg, var(--green-accent) 0%, var(--accent) 50%, var(--red-accent) 100%);
+      width: 4px;
+      opacity: 0.3;
+    }
+    .timeline-node {
+      position: relative;
+      margin-bottom: 60px;
+      display: flex;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .timeline-node:nth-child(odd) { flex-direction: row-reverse; }
+    .timeline-node .dot {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+      z-index: 2;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+    .timeline-node .content {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 44%;
+      position: relative;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+    }
+    .timeline-node:nth-child(odd) .content { border-left: 4px solid var(--red-accent); }
+    .timeline-node:nth-child(even) .content { border-right: 4px solid var(--green-accent); }
+
+    /* ===== Typography ===== */
+    .stage-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .timeline-node:nth-child(odd) .stage-label { text-align: right; }
+    .headline {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .meta {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+    }
+    .description {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-dim);
+      margin: 12px 0;
+    }
+    /* ===== Quote blocks ===== */
+    .quote-block {
+      margin: 14px 0;
+      padding: 16px 20px;
+      background: var(--panel-raised);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+      line-height: 1.6;
+      position: relative;
+    }
+    /* Fix: quote-block border-radius should flip for right-side (odd) nodes */
+    .timeline-node:nth-child(odd) .quote-block {
+      border-left: none;
+      border-right: 3px solid var(--accent);
+      border-radius: 8px 0 0 8px;
+    }
+    .quote-block::before {
+      content: '"';
+      position: absolute;
+      top: -8px; left: 8px;
+      font-size: 48px;
+      color: var(--accent);
+      font-family: Georgia, serif;
+      opacity: 0.25;
+    }
+    .timeline-node:nth-child(odd) .quote-block::before {
+      left: auto; right: 8px;
+    }
+    .quote-block p { margin-bottom: 8px; }
+    .quote-block .attribution {
+      font-style: normal;
+      font-size: 13px;
+      color: var(--text-dim);
+      opacity: 0.8;
+      text-align: right;
+    }
+    /* ===== Image handling ===== */
+    .timeline-image {
+      margin: 14px 0;
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--panel-raised);
+      border: 1px solid var(--border);
+    }
+    .timeline-image img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+    .timeline-image.placeholder {
+      border: 2px dashed var(--border);
+      min-height: 200px;
+      color: var(--text-dim);
+      font-size: 13px;
+      text-align: center;
+      padding: 20px;
+    }
+    .timeline-image.placeholder::before {
+      content: attr(data-label);
+    }
+    /* ===== Source citations ===== */
+    .source-citation {
+      font-size: 12px;
+      color: var(--text-dim);
+      opacity: 0.6;
+      margin-top: 12px;
+      font-style: normal;
+    }
+    /* ===== Header & Footer ===== */
+    .timeline-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .timeline-header .subtitle {
+      font-size: 16px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .timeline-footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    /* ===== Admin / Edit mode ===== */
+    .admin-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.6);
+      z-index: 1000;
+      max-width: 400px;
+      display: none;
+    }
+    .admin-panel.active { display: block; }
+    .admin-panel h3 {
+      font-size: 14px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .admin-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .admin-panel .stage-item {
+      margin-bottom: 12px;
+    }
+    .admin-panel .stage-item label {
+      font-size: 12px;
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .admin-panel .stage-item select {
+      width: 100%;
+      padding: 6px 8px;
+      background: var(--panel-raised);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      border-radius: 6px;
+    }
+    .admin-panel .stage-item button {
+      width: 100%;
+      padding: 6px;
+      margin-top: 4px;
+      background: var(--green-accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .admin-panel .save-btn {
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    .admin-panel .save-btn:hover { background: #d9a84a; }
+    .admin-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: var(--panel-raised);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--text-dim);
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    .admin-toggle:hover { color: var(--accent); }
+    /* Embed mode */
+    [data-embed="true"] .timeline-header h1 { font-size: 22px; }
+    [data-embed="true"] body { padding: 10px; }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .timeline-node { flex-direction: column !important; }
+      .timeline-node .content { max-width: 100%; margin-bottom: 20px; }
+      .timeline-node .dot { left: 20px !important; transform: none; }
+      .timeline-container { padding-left: 20px; }
+      .timeline-line { display: none; }
+      .timeline-node:nth-child(odd) .content { border-left: 4px solid var(--red-accent); border-right: none; }
+      .timeline-node:nth-child(even) .content { border-left: 4px solid var(--green-accent); border-right: none; }
+      .timeline-header h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body data-embed="false" data-edit="false">
+  <div class="timeline-container">
+    <div class="timeline-line"></div>
+
+    <div class="timeline-header">
+      <h1>Ste. Madeleine — From Ashes to Honour</h1>
+      <div class="subtitle">A timeline of displacement and reclamation<br>for the Red River Métis community of Ste. Madeleine, Manitoba</div>
+    </div>
+
+    <!-- Stage 1: Settlement Era -->
+    <div class="timeline-node" data-stage="stage-1">
+      <div class="content">
+        <div class="stage-label">Stage 1 — Thriving Community</div>
+        <div class="headline">Métis homesteaders settle Ste. Madeleine (1870s–1930s)</div>
+        <div class="meta">1870s – 1938 · Southwestern Manitoba, near Pumpkin Plain</div>
+        <div class="timeline-image placeholder" data-label="Historical image placeholder — click Edit mode to assign"></div>
+        <div class="description">
+          The Métis of Ste. Madeleine arrived from the Red River Settlement, many after being forced out by Wolseley's Red River Expeditionary Force, and others returning from the 1885 Resistance. Over 250 Métis families established homesteads, built a log chapel (1913), a one-room school (1922), and maintained a tight-knit community bound by kinship, the French language, and the Catholic faith.
+        </div>
+        <div class="quote-block">
+          <p>"They always considered Ste. Madeleine, with its log cabins, barns and outbuildings, to be their land base."</p>
+          <div class="attribution">— Ste. Madeleine elders, interviewed 1986</div>
+        </div>
+        <div class="source-citation">
+          Source: Metis Archive — "Historic Manitoba Métis Settlements" by Lawrence Barkwell, Louis Riel Institute, 2016
+        </div>
+      </div>
+      <div class="dot"></div>
+    </div>
+
+    <!-- Stage 2: Displacement -->
+    <div class="timeline-node" data-stage="stage-2">
+      <div class="content">
+        <div class="stage-label">Stage 2 — Devastation</div>
+        <div class="headline">The Prairie Farm Rehabilitation Act displaces the community (1935–1938)</div>
+        <div class="meta">1935 – 1938 · PFRA designates Ste. Madeleine as community pasture</div>
+        <div class="timeline-image placeholder" data-label="Historical image placeholder — click Edit mode to assign"></div>
+        <div class="description">
+          In the midst of the "Dirty Thirties", the Prairie Farm Rehabilitation Act designated Ste. Madeleine's land as community pasture to restore native grasslands. Only families who had paid all back taxes could claim compensation — a requirement most could not meet due to economic hardship. Those who remained were told to leave; their homes were burned, their dogs shot, and their church dismantled. The church bell and statues were sold; the logs were destined for a piggery.
+        </div>
+        <div class="quote-block">
+          <p>"Their homes were burned, their dogs were shot, their church was to be dismantled and the logs sold to build a piggery."</p>
+          <div class="attribution">— Metis Archive historical record</div>
+        </div>
+        <div class="quote-block">
+          <p>"Well then, in 1938, we were asked by the municipality to move out as they were going to build a community pasture."</p>
+          <div class="attribution">— Joe Venne, Ste. Madeleine resident (b. 1906)</div>
+        </div>
+        <div class="source-citation">
+          Source: Metis Archive — "Ste. Madeleine — Community Without a Town" (Zeilig &amp; Zeilig, 1987); MMF Spotlight
+        </div>
+      </div>
+      <div class="dot"></div>
+    </div>
+
+    <!-- Stage 3: The Church Rescue -->
+    <div class="timeline-node" data-stage="stage-3">
+      <div class="content">
+        <div class="stage-label">Stage 3 — Resistance</div>
+        <div class="headline">Community saves the church from dismantling (1938)</div>
+        <div class="meta">1938 · Ste. Madeleine, Manitoba</div>
+        <div class="timeline-image placeholder" data-label="Historical image placeholder — click Edit mode to assign"></div>
+        <div class="description">
+          Joe Venne and other community members armed themselves with rifles and confronted the crew sent to dismantle the Ste. Madeleine church. Their resistance succeeded — the church was saved. The family of Caroline and John Vermette was moved into the building to protect it. This act of defiance preserved the physical heart of the community.
+        </div>
+        <div class="quote-block">
+          <p>"The plan to dismantle the church was foiled by Joe Venne and other community members armed themselves with rifles and confronted the crew sent to dismantle the church thus saving it."</p>
+          <div class="attribution">— Metis Archive historical record</div>
+        </div>
+        <div class="source-citation">
+          Source: Metis Archive — "Historic Manitoba Métis Settlements" by Lawrence Barkwell
+        </div>
+      </div>
+      <div class="dot"></div>
+    </div>
+
+    <!-- Stage 4: Aftermath & Memory -->
+    <div class="timeline-node" data-stage="stage-4">
+      <div class="content">
+        <div class="stage-label">Stage 4 — Remembrance</div>
+        <div class="headline">The land becomes pasture; only foundations and cemetery remain (1938–2024)</div>
+        <div class="meta">1938 – 2024 · Belliveau School foundations and cemetery persist</div>
+        <div class="timeline-image placeholder" data-label="Historical image placeholder — click Edit mode to assign"></div>
+        <div class="description">
+          By 1938, the once-vibrant community had virtually vanished. Today, only the stone foundations of the Belliveau School remain, and the cemetery encircles the mound of grass where the church once stood. The wood from the schoolhouse was salvaged — a portion now constitutes the kitchen of the LeClerc home in Victor, Manitoba. The cemetery remains a sacred site; in 2016, the church bell was moved there from St. Hubert Mission.
+        </div>
+        <div class="quote-block">
+          <p>"Today, all that remains of Ste. Madeleine are the stone foundations of the Belliveau School and the cemetery encircling the mound of grass where the church once stood."</p>
+          <div class="attribution">— Metis Archive historical record</div>
+        </div>
+        <div class="description">
+          The displaced families were resettled in road allowance communities like The Corner (Fouillard Corner) and Selby Town near Binscarth. A 1958 census documented 170 Métis living in the Binscarth area. The names "Selby Town" and "Fouillard Corner" were given sarcastically, after the municipal officials responsible for the loss of Ste. Madeleine.
+        </div>
+        <div class="source-citation">
+          Source: Metis Archive — "Historic Manitoba Métis Settlements"; CBC (July 19, 2024)
+        </div>
+      </div>
+      <div class="dot"></div>
+    </div>
+
+    <!-- Stage 5: Reclamation -->
+    <div class="timeline-node" data-stage="stage-5">
+      <div class="content">
+        <div class="stage-label">Stage 5 — Reclamation</div>
+        <div class="headline">Métis regain recognition and land rights (2016–2024)</div>
+        <div class="meta">2016 · July 2024 · July–August 2026</div>
+        <div class="timeline-image placeholder" data-label="Historical image placeholder — click Edit mode to assign"></div>
+        <div class="description">
+          The story of Ste. Madeleine has been documented in two important books: "Kanawayihtamaahk li taan paassii: Preserving Our Past—Ste. Madeleine, Manitoba" by Elder George Fleury (2016), and "Towards a Prairie Atonement" by Trevor Herriot and Elder Norman Fleury (2016). In July 2024, an MOU was signed transferring 100 acres of land at Ste. Madeelene back to the Manitoba Métis Federation, with a new cross raised at the cemetery. This weekend's CCAP community art project continues that reclamation — transforming memory into creative action.
+        </div>
+        <div class="quote-block">
+          <p>"With the desire to protect native grasslands on community pastures, Herriot finds himself recruited into the work of reconciliation and conservation."</p>
+          <div class="attribution">— From "Towards a Prairie Atonement" (2016)</div>
+        </div>
+        <div class="quote-block">
+          <p>"An MOU was signed transferring 100 acres of land back to the Manitoba Métis Federation. 'We've been working toward this for a long time,' said MMF President David Chartrand."</p>
+          <div class="attribution">— CBC (July 19, 2024)</div>
+        </div>
+        <div class="source-citation">
+          Sources: MMF Spotlight; CBC; APTN News; Barkwell, L. "Historic Manitoba Métis Settlements" (2016)
+        </div>
+      </div>
+      <div class="dot"></div>
+    </div>
+
+    <div class="timeline-footer">
+      <p>Dedicated to the Métis families of Ste. Madeleine — displaced, remembered, and reclaimed.</p>
+      <p>All historical content sourced from the Metis Archive and verified primary sources.</p>
+    </div>
+  </div>
+
+  <!-- Admin / Edit Mode Panel -->
+  <button class="admin-toggle" id="adminToggle">Edit Media</button>
+  <div class="admin-panel" id="adminPanel">
+    <button class="admin-close" id="adminClose">×</button>
+    <h3>Timeline Media Manager</h3>
+    <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">Assign images to timeline stages.</p>
+    <div id="stageAssignments"></div>
+    <button class="save-btn" id="saveManifest">Save Manifest</button>
+  </div>
+
+  <script>
+    // ===== Manifest-driven media management =====
+    const MANIFEST_PATH = 'media/timeline/media-manifest.json';
+    const IMAGE_DIR = 'media/timeline/';
+    let manifest = null;
+
+    // Detect edit mode via URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const startInEditMode = urlParams.has('edit');
+    let editMode = startInEditMode;
+
+    // Load manifest on page load
+    async function loadManifest() {
+      try {
+        const res = await fetch(MANIFEST_PATH + '?t=' + Date.now());
+        manifest = await res.json();
+        applyImages();
+        if (editMode) { initAdminPanel(); }
+      } catch(e) {
+        console.log('No manifest found or error:', e.message);
+      }
+    }
+
+    // Apply images from manifest to timeline
+    function applyImages() {
+      if (!manifest) return;
+      Object.entries(manifest.stages).forEach(([stageId, stageData]) => {
+        const node = document.querySelector(`[data-stage="${stageId}"]`);
+        if (!node) return;
+        const imgEl = node.querySelector('.timeline-image');
+        if (!imgEl) return;
+        if (stageData.current_image) {
+          imgEl.classList.remove('placeholder');
+          imgEl.innerHTML = `<img src="${IMAGE_DIR}${stageData.current_image}" alt="${stageData.label || ''}">`;
+        }
+      });
+    }
+
+    // ===== Admin panel =====
+    function initAdminPanel() {
+      const toggle = document.getElementById('adminToggle');
+      const panel = document.getElementById('adminPanel');
+      const closeBtn = document.getElementById('adminClose');
+
+      toggle.addEventListener('click', () => {
+        editMode = !editMode;
+        panel.classList.toggle('active', editMode);
+        toggle.textContent = editMode ? 'Close Editor' : 'Edit Media';
+        if (editMode) { renderStageAssignments(); }
+      });
+      closeBtn.addEventListener('click', () => {
+        editMode = false;
+        panel.classList.remove('active');
+        toggle.textContent = 'Edit Media';
+      });
+
+      if (editMode) {
+        panel.classList.add('active');
+        toggle.textContent = 'Close Editor';
+      }
+
+      renderStageAssignments();
+    }
+
+    function renderStageAssignments() {
+      const container = document.getElementById('stageAssignments');
+      if (!manifest || !container) return;
+      container.innerHTML = '';
+      Object.entries(manifest.stages).forEach(([stageId, stageData]) => {
+        const div = document.createElement('div');
+        div.className = 'stage-item';
+        const candidates = stageData.candidate_images || [];
+        const options = candidates.map(img => `<option value="${img}" ${img === stageData.current_image ? 'selected' : ''}>${img}</option>`).join('');
+        div.innerHTML = `
+          <label for="${stageId}">${stageData.label}</label>
+          <select id="${stageId}" onchange="updateStageImage('${stageId}', this.value)">
+            <option value="">— No image —</option>
+            ${candidates.length ? options : '<option value="">(no candidates yet)</option>'}
+          </select>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Update image in both DOM and manifest
+    window.updateStageImage = function(stageId, filename) {
+      const node = document.querySelector(`[data-stage="${stageId}"]`);
+      const imgEl = node.querySelector('.timeline-image');
+      if (filename) {
+        imgEl.classList.remove('placeholder');
+        imgEl.innerHTML = `<img src="${IMAGE_DIR}${filename}" alt="${manifest.stages[stageId].label}">`;
+        manifest.stages[stageId].current_image = filename;
+      } else {
+        imgEl.classList.add('placeholder');
+        imgEl.innerHTML = '';
+        manifest.stages[stageId].current_image = null;
+      }
+    };
+
+    // Save manifest back to file
+    document.getElementById('saveManifest').addEventListener('click', () => {
+      // Build the updated manifest JSON
+      const manifestStr = JSON.stringify(manifest, null, 2);
+      // Display it so user can save it
+      alert('Manifest updated. Copy the JSON below and save it as media/timeline/media-manifest.json:\n\n' + manifestStr.substring(0, 200) + '...');
+      // Try to trigger a download
+      const blob = new Blob([manifestStr], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'media-manifest.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      location.reload();
+    });
+
+    // Also toggle edit mode via the panel buttons
+    document.getElementById('adminToggle').style.display = 'block';
+
+    // Initialize
+    loadManifest();
+  </script>
+</body>
+</html>

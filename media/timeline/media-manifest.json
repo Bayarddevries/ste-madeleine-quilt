@@ -1,0 +1,55 @@
+{
+  "stages": {
+    "stage-1": {
+      "label": "Thriving Community",
+      "current_image": null,
+      "candidate_images": [
+        "metis_camp_1874.jpg",
+        "IMAG0156.jpg",
+        "IMAG0159.jpg"
+      ],
+      "source": "Wikimedia Commons (public domain) / Archive Windows (IMAG0156/0159)"
+    },
+    "stage-2": {
+      "label": "Devastation",
+      "current_image": null,
+      "candidate_images": [
+        "stm_foundations.jpg"
+      ],
+      "source": "CBC / Metis Archive"
+    },
+    "stage-3": {
+      "label": "Resistance",
+      "current_image": null,
+      "candidate_images": [],
+      "source": "To be identified from archive"
+    },
+    "stage-4": {
+      "label": "Remembrance",
+      "current_image": null,
+      "candidate_images": [
+        "stm_cemetery.jpg"
+      ],
+      "source": "CBC / Metis Archive"
+    },
+    "stage-5": {
+      "label": "Reclamation",
+      "current_image": null,
+      "candidate_images": [
+        "stm_cross.jpg"
+      ],
+      "source": "MMF Spotlight / Archive"
+    }
+  },
+  "_notes": {
+    "image_sources": {
+      "metis_camp_1874.jpg": "Wikimedia Commons — public domain, 1874 Métis camp with Red River carts (640x481)",
+      "stm_cemetery.jpg": "CBC / external — Ste. Madeleine cemetery with white crosses (600x450)",
+      "stm_cross.jpg": "MMF Spotlight — memorial cross with Métis sashes (1280x720)",
+      "stm_foundations.jpg": "External — stone foundations of Belliveau School (1280x1025)",
+      "manitoba_museum_beliveau.jpg": "Manitoba Museum — community photo (768x487, PNG)",
+      "IMAG0156.jpg": "Archive Windows — group gathering at Ste. Madeleine site (to be copied tonight)"
+    },
+    "instructions": "1. Copy IMAG0156.jpg and IMAG0159.jpg from Pictures/Archive Windows/ into media/timeline/ 2. Download MMF Spotlight images from https://www.mmf.mb.ca/mmf-spotlight/from-ashes-to-honour-red-river-metis-reclaim-ste-madeleine 3. Update current_image in this manifest 4. Open timeline.html?edit to verify 5. Commit with git"
+  }
+}
