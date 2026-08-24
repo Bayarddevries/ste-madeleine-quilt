@@ -132,7 +132,7 @@ const zoomval = document.getElementById('zoomval');
    type: photo | video | audio | sphere | scrap
    x,y  : world coordinate of tile CENTER
    s    : side length (square for now)                        */
-const TILES = [
+let TILES = [
   { id:'v1', type:'video', x:820,  y:700,  s:340, title:'Métis flag · Ste. Mads',
     src:'media/flag-loop.mp4', dur:'0:05',
     cap:'The Métis flag flying over Ste. Madeleine on a clear summer morning. Seamless loop.' },
@@ -179,9 +179,12 @@ const TILES = [
 const EMOJI = { photo:'📷', video:'🎞️', audio:'🎙️', sphere:'🌐', scrap:'📓', gif:'🎞️' };
 const BADGE = { photo:'📷', video:'▶', audio:'♪', sphere:'🌐', scrap:'📓', gif:'▶' };
 
-/* build tile DOM once */
+/* build tile DOM */
 const tileEls = new Map();
-TILES.forEach(t=>{
+function renderTiles(){
+  world.innerHTML='';
+  tileEls.clear();
+  TILES.forEach(t=>{
   const el = document.createElement('div');
   el.className = 'tile type-'+t.type;
   const tw = t.w || t.s, th = t.h || t.s;
@@ -210,7 +213,8 @@ TILES.forEach(t=>{
   el.addEventListener('click', e=>{ e.stopPropagation(); openTile(t); });
   world.appendChild(el);
   tileEls.set(t.id, el);
-});
+  });
+}
 
 /* ============ torus math ============
    For each tile, pick the representative position nearest the camera
@@ -369,7 +373,22 @@ overlay.addEventListener('click', e=>{ if(e.target===overlay){ overlay.classList
 /* ============ boot ============ */
 function resize(){ layout(); }
 window.addEventListener('resize', resize);
-frameContent();
+
+// Load weekend media tiles from quilt-tiles.json (if present), then render.
+async function boot(){
+  try{
+    const r = await fetch('quilt-tiles.json');
+    if(r.ok){
+      const extra = await r.json();
+      const existing = new Set(TILES.map(t=>t.id));
+      const fresh = extra.filter(t=>!existing.has(t.id));
+      if(fresh.length) TILES = TILES.concat(fresh);
+    }
+  }catch(e){ /* keep embedded prototype */ }
+  renderTiles();
+  frameContent();
+}
+boot();
 })();
 </script>
 </body>
