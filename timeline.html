@@ -96,8 +96,12 @@
       position: relative;
       box-shadow: 0 4px 30px rgba(0,0,0,0.4);
     }
+    /* Stage-specific border accent colors */
     .timeline-node:nth-child(odd) .content { border-left: 4px solid var(--red-accent); }
     .timeline-node:nth-child(even) .content { border-right: 4px solid var(--green-accent); }
+    /* Stage 2 (devastation) and Stage 4 (remembrance) use accent border on the appropriate side */
+    [data-stage="stage-2"] .content { border-right: 4px solid var(--red-accent); border-left: 4px solid var(--red-accent); }
+    [data-stage="stage-4"] .content { border-right: 4px solid var(--accent); border-left: 4px solid var(--accent); }
 
     /* ===== Typography ===== */
     .stage-label {
