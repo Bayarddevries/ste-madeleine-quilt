@@ -39,6 +39,8 @@
     background:linear-gradient(transparent, rgba(20,14,8,.78));color:#f6efe0;
     font-family:'BarlowCondensed',Georgia,serif;font-size:14px;font-weight:normal;letter-spacing:.6px;text-shadow:0 1px 2px rgba(0,0,0,.6);}
   .tile video,.tile img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
+  .tile model-viewer{width:100%;height:100%;--poster-color:transparent;pointer-events:none;}
+  #overlay .media model-viewer{width:100%;height:56vh;background:#1a120b;border-radius:10px 10px 0 0;}
   .tile.type-photo{background:linear-gradient(135deg,#8b6f47,#5f4a2e);}
   .tile.type-video{background:linear-gradient(135deg,#1f5c5b,#123b3a);}
   .tile.type-audio{background:linear-gradient(135deg,#5b4a8a,#3d3263);}
@@ -179,6 +181,22 @@ let TILES = [
 const EMOJI = { photo:'📷', video:'🎞️', audio:'🎙️', sphere:'🌐', scrap:'📓', gif:'🎞️' };
 const BADGE = { photo:'📷', video:'▶', audio:'♪', sphere:'🌐', scrap:'📓', gif:'▶' };
 
+/* lazy-load the model-viewer library once, only when a 3D tile is opened */
+let _mvPromise=null;
+function loadModelViewer(){
+  if(customElements.get('model-viewer')) return Promise.resolve();
+  if(_mvPromise) return _mvPromise;
+  _mvPromise = new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.type='module';
+    s.src='media/vendor/model-viewer.min.js';
+    s.onload=resolve;
+    s.onerror=()=>{ _mvPromise=null; reject(new Error('model-viewer failed to load')); };
+    document.head.appendChild(s);
+  });
+  return _mvPromise;
+}
+
 /* build tile DOM */
 const tileEls = new Map();
 function renderTiles(){
@@ -196,6 +214,12 @@ function renderTiles(){
     el.appendChild(v);
     const d = document.createElement('div'); d.className='dur'; d.textContent=t.dur||''; el.appendChild(d);
     const play = document.createElement('div'); play.className='play'; play.textContent='▶'; el.appendChild(play);
+  } else if(t.type==='sphere' && t.src && /\.(glb|gltf)$/i.test(t.src)){
+    // lightweight tile preview: icon + label; full 3D viewer loads in the overlay on tap
+    const ph = document.createElement('div'); ph.className='ph';
+    const e = document.createElement('div'); e.className='em'; e.textContent='🧊';
+    const tag = document.createElement('div'); tag.className='tag'; tag.textContent='3D';
+    ph.appendChild(e); ph.appendChild(tag); el.appendChild(ph);
   } else if((t.type==='gif'||t.type==='photo'||t.type==='scrap') && t.src){
     const g = document.createElement('img'); g.src=t.src; g.alt=t.title; g.loading='lazy';
     g.style.objectFit='contain';
@@ -356,8 +380,23 @@ function openTile(t){
     }
   } else if(t.type==='sphere'){
     ovMedia.innerHTML=''; ovMedia.className='media';
-    const ph=document.createElement('div'); ph.style.cssText='display:flex;align-items:center;justify-content:center;height:240px;color:#fff;font-size:56px;'; ph.textContent='🌐';
-    ovMedia.appendChild(ph);
+    if(t.src && /\.(glb|gltf)$/i.test(t.src)){
+      // lazy-load model-viewer only when a 3D tile is actually opened
+      loadModelViewer().then(()=>{
+        const mv=document.createElement('model-viewer');
+        mv.src=t.src; mv.alt=t.title||'3D scan';
+        mv.setAttribute('auto-rotate',''); mv.setAttribute('camera-controls','');
+        mv.setAttribute('interaction-prompt','');
+        mv.setAttribute('shadow-intensity','1');
+        mv.style.width='100%'; mv.style.height='56vh';
+        ovMedia.innerHTML=''; ovMedia.appendChild(mv);
+      });
+      const ph=document.createElement('div'); ph.style.cssText='display:flex;align-items:center;justify-content:center;height:240px;color:#fff;font-size:56px;'; ph.textContent='⏳';
+      ovMedia.appendChild(ph);
+    } else {
+      const ph=document.createElement('div'); ph.style.cssText='display:flex;align-items:center;justify-content:center;height:240px;color:#fff;font-size:56px;'; ph.textContent='🌐';
+      ovMedia.appendChild(ph);
+    }
   } else if(t.type==='audio'){
     ovMedia.innerHTML=''; ovMedia.className='media';
     const ph=document.createElement('div'); ph.style.cssText='display:flex;align-items:center;justify-content:center;height:180px;color:#fff;font-size:64px;'; ph.textContent='🎙️';
