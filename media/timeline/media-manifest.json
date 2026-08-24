@@ -1,4 +1,6 @@
 {
+  "title": "Ste. Madeleine — From Ashes to Honour",
+  "subtitle": "A timeline of displacement and reclamation for the Red River Métis community of Ste. Madeleine, Manitoba",
   "stages": {
     "stage-1": {
       "label": "Thriving Community",
@@ -9,7 +11,13 @@
         "IMAG0159.jpg",
         "manitoba_museum_beliveau.jpg"
       ],
-      "source": "Wikimedia Commons (public domain) / Archive Windows (IMAG0156/0159) / Manitoba Museum"
+      "source": "Wikimedia Commons (public domain) / Archive Windows (IMAG0156/0159) / Manitoba Museum",
+      "year": "1870s–1938",
+      "meta": "Southwestern Manitoba, near Pumpkin Plain",
+      "headline": "Métis homesteaders settle Ste. Madeleine",
+      "description": "The Métis of Ste. Madeleine arrived from the Red River Settlement, many after being forced out by Wolseley's Red River Expeditionary Force, and others returning from the 1885 Resistance. Over 250 Métis families established homesteads, built a log chapel (1913), a one-room school (1922), and maintained a tight-knit community bound by kinship, the French language, and the Catholic faith.",
+      "quote": "They always considered Ste. Madeleine, with its log cabins, barns and outbuildings, to be their land base.",
+      "attribution": "Ste. Madeleine elders, interviewed 1986"
     },
     "stage-2": {
       "label": "Devastation",
@@ -17,7 +25,13 @@
       "candidate_images": [
         "stm_foundations.jpg"
       ],
-      "source": "CBC / Metis Archive"
+      "source": "CBC / Metis Archive",
+      "year": "1935–1938",
+      "meta": "PFRA designates Ste. Madeleine as community pasture",
+      "headline": "The Prairie Farm Rehabilitation Act displaces the community",
+      "description": "In the midst of the \"Dirty Thirties\", the Prairie Farm Rehabilitation Act designated Ste. Madeleine's land as community pasture to restore native grasslands. Only families who had paid all back taxes could claim compensation — a requirement most could not meet due to economic hardship. Those who remained were told to leave; their homes were burned, their dogs shot, and their church dismantled. The church bell and statues were sold; the logs were destined for a piggery.",
+      "quote": "Their homes were burned, their dogs were shot, their church was to be dismantled and the logs sold to build a piggery.",
+      "attribution": "Metis Archive historical record"
     },
     "stage-3": {
       "label": "Resistance",
@@ -26,7 +40,13 @@
         "IMAG0156.jpg",
         "IMAG0159.jpg"
       ],
-      "source": "Archive Windows — Joe Venne and community members confronting the dismantling crew"
+      "source": "Archive Windows — Joe Venne and community members confronting the dismantling crew",
+      "year": "1938",
+      "meta": "Ste. Madeleine, Manitoba",
+      "headline": "Community saves the church from dismantling",
+      "description": "Joe Venne and other community members armed themselves with rifles and confronted the crew sent to dismantle the Ste. Madeleine church. Their resistance succeeded — the church was saved. The family of Caroline and John Vermette was moved into the building to protect it. This act of defiance preserved the physical heart of the community.",
+      "quote": "The plan to dismantle the church was foiled by Joe Venne and other community members armed themselves with rifles and confronted the crew sent to dismantle the church thus saving it.",
+      "attribution": "Metis Archive historical record"
     },
     "stage-4": {
       "label": "Remembrance",
@@ -34,7 +54,13 @@
       "candidate_images": [
         "stm_cemetery.jpg"
       ],
-      "source": "CBC / Metis Archive"
+      "source": "CBC / Metis Archive",
+      "year": "1938–2024",
+      "meta": "Belliveau School foundations and cemetery persist",
+      "headline": "The land becomes pasture; only foundations and cemetery remain",
+      "description": "By 1938, the once-vibrant community had virtually vanished. Today, only the stone foundations of the Belliveau School remain, and the cemetery encircles the mound of grass where the church once stood. The wood from the schoolhouse was salvaged — a portion now constitutes the kitchen of the LeClerc home in Victor, Manitoba. The cemetery remains a sacred site; in 2016, the church bell was moved there from St. Hubert Mission. The displaced families were resettled in road allowance communities like The Corner (Fouillard Corner) and Selby Town near Binscarth.",
+      "quote": "Today, all that remains of Ste. Madeleine are the stone foundations of the Belliveau School and the cemetery encircling the mound of grass where the church once stood.",
+      "attribution": "Metis Archive historical record"
     },
     "stage-5": {
       "label": "Reclamation",
@@ -43,7 +69,13 @@
         "stm_cross.jpg",
         "manitoba_museum_beliveau.jpg"
       ],
-      "source": "MMF Spotlight / Archive / Manitoba Museum"
+      "source": "MMF Spotlight / Archive / Manitoba Museum",
+      "year": "2016–2024",
+      "meta": "July 2024 · July–August 2026",
+      "headline": "Métis regain recognition and land rights",
+      "description": "The story of Ste. Madeleine has been documented in two important books: \"Kanawayihtamaahk li taan paassii: Preserving Our Past—Ste. Madeleine, Manitoba\" by Elder George Fleury (2016), and \"Towards a Prairie Atonement\" by Trevor Herriot and Elder Norman Fleury (2016). In July 2024, an MOU was signed transferring 100 acres of land at Ste. Madeelene back to the Manitoba Métis Federation, with a new cross raised at the cemetery. This weekend's CCAP community art project continues that reclamation — transforming memory into creative action.",
+      "quote": "With the desire to protect native grasslands on community pastures, Herriot finds himself recruited into the work of reconciliation and conservation.",
+      "attribution": "From \"Towards a Prairie Atonement\" (2016)"
     }
   },
   "_notes": {
@@ -52,9 +84,9 @@
       "stm_cemetery.jpg": "CBC / external — Ste. Madeleine cemetery with white crosses (600x450)",
       "stm_cross.jpg": "MMF Spotlight — memorial cross with Métis sashes (1280x720)",
       "stm_foundations.jpg": "External — stone foundations of Belliveau School (1280x1025)",
-      "manitoba_museum_beliveau.jpg": "Manitoba Museum — community photo (768x487, PNG)",
-      "IMAG0156.jpg": "Archive Windows — group gathering at Ste. Madeleine site (to be copied tonight)"
-    },
-    "instructions": "1. Copy IMAG0156.jpg and IMAG0159.jpg from Pictures/Archive Windows/ into media/timeline/ 2. Download MMF Spotlight images from https://www.mmf.mb.ca/mmf-spotlight/from-ashes-to-honour-red-river-metis-reclaim-ste-madeleine 3. Update current_image in this manifest 4. Open timeline.html?edit to verify 5. Commit with git"
+      "manitoba_museum_belieuveau.jpg": "Manitoba Museum — community photo (768x487, PNG)",
+      "IMAG0156.jpg": "Archive Windows — group gathering at Ste. Madeleine site (1.6MB)",
+      "IMAG0159.jpg": "Archive Windows — additional Ste. Madeleine site photo"
+    }
   }
 }
