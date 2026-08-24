@@ -2,17 +2,18 @@
   "stages": {
     "stage-1": {
       "label": "Thriving Community",
-      "current_image": null,
+      "current_image": "metis_camp_1874.jpg",
       "candidate_images": [
         "metis_camp_1874.jpg",
         "IMAG0156.jpg",
-        "IMAG0159.jpg"
+        "IMAG0159.jpg",
+        "manitoba_museum_beliveau.jpg"
       ],
-      "source": "Wikimedia Commons (public domain) / Archive Windows (IMAG0156/0159)"
+      "source": "Wikimedia Commons (public domain) / Archive Windows (IMAG0156/0159) / Manitoba Museum"
     },
     "stage-2": {
       "label": "Devastation",
-      "current_image": null,
+      "current_image": "stm_foundations.jpg",
       "candidate_images": [
         "stm_foundations.jpg"
       ],
@@ -20,13 +21,16 @@
     },
     "stage-3": {
       "label": "Resistance",
-      "current_image": null,
-      "candidate_images": [],
-      "source": "To be identified from archive"
+      "current_image": "IMAG0156.jpg",
+      "candidate_images": [
+        "IMAG0156.jpg",
+        "IMAG0159.jpg"
+      ],
+      "source": "Archive Windows — Joe Venne and community members confronting the dismantling crew"
     },
     "stage-4": {
       "label": "Remembrance",
-      "current_image": null,
+      "current_image": "stm_cemetery.jpg",
       "candidate_images": [
         "stm_cemetery.jpg"
       ],
@@ -34,11 +38,12 @@
     },
     "stage-5": {
       "label": "Reclamation",
-      "current_image": null,
+      "current_image": "stm_cross.jpg",
       "candidate_images": [
-        "stm_cross.jpg"
+        "stm_cross.jpg",
+        "manitoba_museum_beliveau.jpg"
       ],
-      "source": "MMF Spotlight / Archive"
+      "source": "MMF Spotlight / Archive / Manitoba Museum"
     }
   },
   "_notes": {
