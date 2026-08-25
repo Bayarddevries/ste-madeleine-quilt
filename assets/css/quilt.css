@@ -1,0 +1,242 @@
+/* Ste. Madeleine Quilt — shared design system (viewer + editor) */
+
+:root {
+  --bg: #1a120b;           /* deep warm brown */
+  --bg-2: #241a10;
+  --panel: #2a1e12;
+  --ink: #e8dcc0;          /* parchment */
+  --ink-dim: #b9a98a;
+  --accent: #c9a227;       /* Métis gold */
+  --crimson: #b3362a;      /* RRMNHC crimson */
+  --border: #3a2d1e;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans: 'Barlow Condensed', 'Helvetica Neue', Arial, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-serif);
+  background: var(--bg);
+  color: var(--ink);
+  overflow-x: hidden;
+}
+
+/* ===== Viewer scroll ===== */
+.quilt-scroll {
+  width: 100%;
+}
+
+.q-section {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-2);
+}
+.q-section.has-bg {
+  background-size: cover;
+  background-position: center;
+  background-attachment: scroll;
+}
+
+.q-inner-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Chapter title banner */
+.q-chapter-title {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 48px 24px 24px;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  z-index: 20;
+  background: linear-gradient(rgba(26,18,11,0.85), rgba(26,18,11,0));
+  pointer-events: none;
+}
+.q-chapter-num {
+  display: inline-block;
+  margin-right: 14px;
+  color: var(--accent);
+  font-size: 0.7em;
+  vertical-align: middle;
+}
+
+/* ===== Tiles ===== */
+.q-tile {
+  position: absolute;
+  overflow: hidden;
+  line-height: 0;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+}
+.q-tile:hover { box-shadow: 0 8px 26px rgba(0,0,0,0.65); }
+.q-tile.type-text { line-height: 1.4; }
+
+.q-inner {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  overflow: hidden;
+}
+
+.q-media {
+  width: 100%; height: 100%;
+  display: block;
+}
+img.q-media { object-fit: cover; }
+video.q-video { object-fit: cover; }
+
+/* Land / texture tiles get a soft grain-vignette so they read as "backing" */
+.type-land .q-inner::after,
+.type-texture .q-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.28));
+  pointer-events: none;
+}
+
+.q-caption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 18px 10px 8px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background: linear-gradient(transparent, rgba(10,6,3,0.8));
+  line-height: 1.3;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Audio tile ===== */
+.q-audio-cover {
+  width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.q-audio-play {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(26,18,11,0.75);
+  border: 2px solid var(--accent);
+  color: var(--ink);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+.q-audio-play:hover { background: var(--crimson); transform: scale(1.08); }
+
+/* ===== Scan (3D) tile ===== */
+.q-scan {
+  width: 100%; height: 100%;
+  background: #000 center/cover no-repeat;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  cursor: pointer;
+}
+.q-scan-tag {
+  margin: 8px;
+  padding: 3px 9px;
+  background: rgba(26,18,11,0.8);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+}
+
+/* ===== Text tiles ===== */
+.q-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  font-family: var(--font-serif);
+  line-height: 1.5;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+
+/* ===== Lightbox (photo / audio / scan) ===== */
+.q-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(8,5,2,0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40px;
+  cursor: zoom-out;
+}
+.q-lightbox img, .q-lightbox video {
+  max-width: 90vw;
+  max-height: 82vh;
+  object-fit: contain;
+  cursor: default;
+}
+.q-lightbox .q-lb-caption {
+  position: absolute;
+  bottom: 24px; left: 0; right: 0;
+  text-align: center;
+  color: var(--ink-dim);
+  font-family: var(--font-sans);
+  letter-spacing: 0.05em;
+  font-size: 14px;
+}
+.q-lightbox .q-lb-close {
+  position: absolute;
+  top: 18px; right: 24px;
+  color: var(--ink);
+  font-size: 30px;
+  cursor: pointer;
+  background: none; border: none;
+}
+.q-lightbox model-viewer {
+  width: min(88vw, 880px);
+  height: min(78vh, 680px);
+  background: #000;
+}
+
+/* ===== Shared audio element (one player per page) ===== */
+#q-audio-player {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 52px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  display: none;
+  align-items: center;
+  gap: 14px;
+  padding: 0 18px;
+  z-index: 900;
+  font-family: var(--font-sans);
+}
+#q-audio-player.active { display: flex; }
+#q-audio-player audio { flex: 1; height: 36px; }
+#q-audio-player .q-audio-label {
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink-dim);
+  font-size: 13px;
+}
