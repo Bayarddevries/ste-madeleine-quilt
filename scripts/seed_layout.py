@@ -51,40 +51,49 @@ def tile_from_manifest(t, aspect):
             'caption': t.get('cap', 'Ste. Madeleine Métis Days 2026'),
             'title': t.get('title', '')}
 
-def pack_organic(tiles, start_x, start_y, rng, textures):
-    """Pack tiles into a gapless quilt surface. Photos keep original aspect
-    ratios; texture/filler strips are stretched to seal the gaps that form
-    between varied-height photos. Rows are packed tight and any leftover
-    void at row-end or row-bottom is filled by a texture tile."""
+def pack_gapless(tiles, textures, start_x, start_y, rng):
+    """Pack a gapless quilt using the TEXTURES AS BACKING approach.
+
+    The texture images form a full-surface backing cloth (they fill 100% of the
+    area, so nothing can show through). People-photos are placed on top at their
+    ORIGINAL aspect ratio (never cropped/stretched) with small seams between
+    them — the backing shows through the seams as 'stitching'.
+
+    Gapless BY CONSTRUCTION: the backing covers the whole bbox.
+    Returns list of (tile_or_texturepath, x, y, w, h, kind)."""
     placed = []
+
+    # ---- 1. Pack photos in a dense cascade with small seams ----
+    seam = 6
     x, y = start_x, start_y
     row_h = 0
     row_start_x = start_x
-    ti = 0
-    for i, t in enumerate(tiles):
-        if x - start_x > 1250:
-            # seal the bottom void of the previous row with a wide texture strip
-            if textures:
-                # wide strip spanning the whole row width at the jagged bottom
-                fx, fy = row_start_x, y + int(row_h * 0.72)
-                fw = x - row_start_x
-                fh = max(20, int(row_h * 0.3))
-                placed.append((textures[ti % len(textures)], fx, fy, fw, fh, 'texture'))
-                ti += 1
-            # next row starts well into the previous (covered by the strip above)
-            y += int(row_h * 0.72)
-            x = start_x + rng.randint(-8, 8)
-            row_start_x = x
+    max_row_w = 2200
+    for t in tiles:
+        tw, th = t['w'], t['h']
+        # wrap to next row if this tile would overflow
+        if (x - start_x) + tw > max_row_w and row_h > 0:
+            y += row_h + seam
+            x = row_start_x
             row_h = 0
-        # zero horizontal gap: left edge = previous right edge
-        jitter_y = rng.randint(-4, 4) if i > 0 else 0
-        placed.append((t, x, y + jitter_y, t['w'], t['h'], 'photo'))
-        x += t['w']
-        row_h = max(row_h, t['h'])
-    # final row bottom seal
-    if textures:
-        fw = x - row_start_x
-        placed.append((textures[ti % len(textures)], row_start_x, y + int(row_h * 0.72), fw, max(20, int(row_h * 0.3)), 'texture'))
+        placed.append((t, x, y, tw, th, 'photo'))
+        x += tw + seam
+        row_h = max(row_h, th)
+
+    # ---- 2. Backing: stretch textures to cover the WHOLE surface (gapless) ----
+    if placed and textures:
+        minx = min(p[1] for p in placed)
+        miny = min(p[2] for p in placed)
+        maxx = max(p[1] + p[3] for p in placed)
+        maxy = max(p[2] + p[4] for p in placed)
+        bw = maxx - minx + seam * 2
+        bh = maxy - miny + seam * 2
+        # tile textures across the backing (3 columns) for varied cloth
+        ncol = 3
+        col_w = bw / ncol
+        for ci in range(ncol):
+            tex = textures[ci % len(textures)]
+            placed.append((tex, minx + ci * col_w, miny, col_w, bh, 'backing'))
     return placed
 
 def build():
@@ -137,22 +146,25 @@ def build():
     for (kind, m), t in zip(pool, seq_tiles):
         if kind == 'video': t['type'] = 'video'
         elif kind == 'audio': t['type'] = 'audio'; t['cover'] = 'media/ste-madeleine-sign-tile.png'
-    placed = pack_organic(seq_tiles, 60, 60, rng, textures)
+    placed = pack_gapless(seq_tiles, textures, 60, 60, rng)
     reclam_tiles = []
     ti = 0
     for entry in placed:
-        if entry[5] == 'texture':
-            # texture filler strip — stretched to seal the gap, croppable
-            t, px, py, pw, ph, _ = entry
-            reclam_tiles.append({'id': 'tex-fill-' + str(ti), 'type': 'texture',
-                                 'src': t, 'x': px, 'y': py, 'w': max(pw, 40), 'h': max(ph, 20),
+        kind = entry[5]
+        t, px, py, pw, ph, _ = entry
+        if kind == 'backing':
+            # backing cloth — stretched to cover the whole surface, z=0 (under photos)
+            reclam_tiles.append({'id': 'backing-' + str(ti), 'type': 'texture',
+                                 'src': t, 'x': int(px), 'y': int(py),
+                                 'w': int(pw), 'h': int(ph),
                                  'z': 0, 'rotate': 0, 'rx': 0,
                                  'caption': 'surface of St. Madeleine'})
             ti += 1
         else:
-            t, px, py, pw, ph, _ = entry
-            t['x']=px; t['y']=py; t['w']=pw; t['h']=ph
-            t['rotate']=rng.choice([-1,0,0,1])
+            # photo — keeps original aspect ratio, z=1 (above backing)
+            t['x']=int(px); t['y']=int(py); t['w']=int(pw); t['h']=int(ph)
+            t['z']=1
+            t['rotate']=0
             reclam_tiles.append(t)
     # scans at the end
     sx = max((t['x']+t['w'] for t in reclam_tiles), default=60) + 40
