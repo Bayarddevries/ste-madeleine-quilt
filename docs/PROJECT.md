@@ -32,7 +32,10 @@
 ONE editor  →  layout.json  →  ONE viewer (the scroll)
 ```
 - **Editor** = composition studio: drag, scale, reshape (non-square crops), layer/z-order, overlap. Operates on a **section/chapter canvas** at a time. AI seeds a starting layout; Bayard rearranges.
-- **layout.json** = single source of truth for every tile's position/size/shape/layer per section.
+- `layout.json` = single source of truth for every tile's position/size/shape/layer per section.
+- **3D scans (GLB):** live in the quilt as tiles like any other media. A scan tile opens
+  an interactive 3D viewer (drag-orbit) inline or in an overlay — fully integrated, not
+  an edge case.
 - **Viewer** = the endless scroll. Stitches sections together in order, renders layout.json faithfully (editor WYSIWYG = viewer).
 
 ## Workflow per section (joint venture)
@@ -56,6 +59,8 @@ ONE editor  →  layout.json  →  ONE viewer (the scroll)
 - Three broken editors → consolidate to one real one.
 - No spec existed → SPEC.md now mandated.
 - No git remote → consider pushing for backup (ask Bayard).
+- **3D scans must be first-class tiles** — editor can place them, viewer can open them
+  as interactive 3D, not a disconnected viewer tab.
 
 ## Out of scope (from INTENT)
 - No auto-finished layouts. No torus scatter as end state. No patched legacy editors.

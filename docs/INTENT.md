@@ -6,7 +6,7 @@
 ## The one-sentence vision
 One endlessly-scrolling, deliberately-composed page that tells the Ste. Madeleine
 story — loss → resistance → reclamation — as a quilted collage of the weekend media
-and the land itself.
+(photos, videos, audio, 3D scans) and the land itself.
 
 ## Outcome
 A single continuous scroll. From top to bottom it carries the history of the location
@@ -39,7 +39,9 @@ The editor is the point, not a bolt-on. Bayard is the collagist.
 ## Binding constraints
 - **Free tools only.**
 - **The editor must work** — it is how Bayard authors the artifact.
-- 200+ tiles is the known content set (photos, video, audio, 3D scans) + land/texture images.
+- 200+ tiles is the known content set (photos, video, audio, **3D scans**) + land/texture images.
+- **The 3D scans are first-class content** — they integrate into the quilt on equal
+  footing with photos/video/audio, not as a bolted-on viewer afterthought.
 
 ## Out of scope
 - Auto-generating a "finished" layout and calling it done.
