@@ -2,72 +2,82 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Ste. Madeleine — A Quilt of Memory &amp; Reclamation</title>
 <link rel="stylesheet" href="assets/css/quilt.css">
 <style>
-  /* Viewer-specific chrome */
-  .quilt-hero {
-    min-height: 70vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 60px 24px;
-    background: radial-gradient(ellipse at 50% 30%, #2c1f12 0%, var(--bg) 70%);
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--bg); }
+  /* Free-pan canvas */
+  #viewport {
+    position: fixed; inset: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 30%, #241a10 0%, #171008 60%, #120c06 100%),
+      var(--bg);
+    cursor: grab;
+    touch-action: none;
   }
-  .quilt-hero .wordmark {
-    max-width: min(640px, 90vw);
-    margin-bottom: 22px;
+  #viewport.panning { cursor: grabbing; }
+  #surface {
+    position: absolute; top: 0; left: 0;
+    transform-origin: 0 0;
+    will-change: transform;
   }
-  .quilt-hero h1 {
+  #load-msg {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-dim); font-family: var(--font-sans); letter-spacing: .05em; z-index: 5;
+  }
+  /* intro overlay */
+  #intro {
+    position: fixed; inset: 0; z-index: 20;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 40px;
+    background: radial-gradient(ellipse at 50% 30%, #2c1f12 0%, #120c06 80%);
+    transition: opacity .5s ease;
+  }
+  #intro.hidden { opacity: 0; pointer-events: none; }
+  #intro .wordmark { max-width: min(420px, 80vw); margin-bottom: 20px; }
+  #intro h1 {
     font-family: var(--font-sans);
-    font-size: clamp(1.8rem, 5vw, 3.2rem);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink);
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink);
   }
-  .quilt-hero .sub {
-    margin-top: 14px;
-    max-width: 520px;
-    color: var(--ink-dim);
-    font-size: 1.05rem;
-    line-height: 1.6;
+  #intro p { max-width: 480px; margin-top: 14px; color: var(--ink-dim); font-size: 1.02rem; line-height: 1.6; }
+  #intro .enter-btn {
+    margin-top: 30px; padding: 12px 34px;
+    background: var(--crimson); color: #fff; border: none; border-radius: 30px;
+    font-family: var(--font-sans); font-size: 15px; letter-spacing: .06em; cursor: pointer;
   }
-  .quilt-hero .scroll-cue {
-    margin-top: 34px;
-    color: var(--accent);
-    font-size: 26px;
-    animation: bob 2s ease-in-out infinite;
-  }
-  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(8px)} }
+  #intro .enter-btn:hover { background: #c04a52; }
+  #intro .hint { margin-top: 16px; color: var(--ink-dim); font-size: 13px; }
+  #load-msg.hidden { display: none; }
 </style>
 </head>
 <body>
-  <div class="quilt-hero">
+  <!-- Intro overlay -->
+  <div id="intro">
     <img class="wordmark" src="media/ste-madeleine-sign-wordmark.png" alt="Ste. Madeleine">
     <h1>A Quilt of Memory &amp; Reclamation</h1>
-    <p class="sub">
+    <p>
       The story of a Métis community taken by force, remembered through the land,
-      and reclaimed by the people who returned. Scroll to walk the quilt.
+      and reclaimed by the people who returned. Drag in any direction to walk the quilt.
     </p>
-    <div class="scroll-cue">&#8964;</div>
+    <button class="enter-btn" id="enter-btn">Enter the Quilt</button>
+    <div class="hint">drag to move · scroll / pinch to zoom</div>
   </div>
 
-  <main class="quilt-scroll" id="scroll"></main>
+  <div id="load-msg">Loading the quilt…</div>
 
-  <footer class="quilt-footer" style="padding:60px 24px;text-align:center;color:var(--ink-dim);font-family:var(--font-sans);letter-spacing:.05em;">
-    Ste. Madeleine Métis Days 2026 · RRMNHC · Lii Michif Niiyanaan
-  </footer>
+  <!-- Free-pan canvas -->
+  <div id="viewport">
+    <div id="surface"></div>
+  </div>
 
   <!-- Shared audio player -->
-  <div id="q-audio-player">
-    <span class="q-audio-label"></span>
-    <audio controls></audio>
-  </div>
+  <div id="q-audio-player"><span class="q-audio-label"></span><audio controls></audio></div>
 
-  <!-- Vendored local 3D viewer (free, no CDN) -->
   <script src="media/vendor/model-viewer.min.js" type="module"></script>
   <script src="assets/js/renderer.js"></script>
   <script src="assets/js/viewer.js"></script>

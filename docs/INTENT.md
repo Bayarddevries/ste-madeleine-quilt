@@ -4,14 +4,27 @@
 > This is the source of truth. Re-read before any build decision.
 
 ## The one-sentence vision
-One endlessly-scrolling, deliberately-composed page that tells the Ste. Madeleine
-story — loss → resistance → reclamation — as a quilted collage of the weekend media
-(photos, videos, audio, 3D scans) and the land itself, interleaving people and land.
+A single continuous, free-panning 2D canvas that tells the Ste. Madeleine story —
+loss → resistance → reclamation — as an interconnected quilt of the weekend media
+and the land itself, preserving original aspect ratios.
+
+## The form (corrected 2026-08-25)
+- **One continuous 2D canvas, NOT a vertical scroll page.** Drag/pan in ALL
+  directions (mouse + touch), with wheel/pinch zoom.
+- **Tiles packed interconnected** — edges touching/overlapping into a contiguous
+  quilt surface. Organic and staggered, NOT a grid.
+- **Original aspect ratios preserved** — no square crops, no mobile "reflow" columns.
+- **Videos autoplay on loop** as they scroll into view, pause when out of view.
+- **Land/texture images are the stitching** — they space and separate people-clusters.
+- **Gentle narrative flow, no rigid order.** The story (history → reclamation) pulls
+  the viewer across the surface, but they are free to wander. There is a beginning and
+  an end, not a strict left-to-right.
 
 ## Outcome
-A single continuous scroll. From top to bottom it carries the history of the location
-and the story of its reclamation. Media is positioned quilt-style, next to one another,
-using images of the land and texture images Bayard captured to space the pieces out.
+A single continuous, free-panning 2D canvas. Dragging in any direction walks the
+history of the location and the story of its reclamation. Media is packed
+interconnected (edges touching/overlapping), quilt-style, using images of the land
+and texture images Bayard captured to space and separate the pieces.
 
 ## User
 - The public — a memorial they scroll through and feel the weight of.

@@ -4,7 +4,9 @@
 
 ## Project
 - **Dir:** `~/ste-madeleine-quilt/`
-- **What:** One endlessly-scrolling, hand-designed narrative quilt page.
+- **What:** A single continuous, free-panning 2D quilt canvas (drag in all directions,
+  pinch/wheel zoom). Tiles packed interconnected at original aspect ratios; videos
+  autoplay on scroll-into-view; land/texture as stitching. Gentle narrative flow.
 - **Story:** Loss → Resistance → Reclamation. The 2026 weekend media is living proof of reclamation.
 - **Current repo:** `master`, NO remote. Committed work exists but the build is fragmented.
 
