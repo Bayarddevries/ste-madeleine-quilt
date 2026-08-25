@@ -44,6 +44,10 @@
     const fit = tile.objectFit || 'cover';
     const inner = makeEl('div', 'q-inner');
     inner.style.objectFit = fit;
+    // texture filler tiles stretch to fill their gap (gapless quilt seal), not crop
+    if (tile.type === 'texture') {
+      inner.style.objectFit = 'fill';
+    }
 
     const src = tile.src;
     const isGlb = src && /\.glb$/i.test(src);

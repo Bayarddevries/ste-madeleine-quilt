@@ -40,31 +40,51 @@ def tile_from_manifest(t, aspect):
         w, h = base, int(base / ar)
     else:
         w, h = int(base * ar), base
-    return {'id': t.get('id'), 'src': src, 'type': t.get('type', 'photo'),
+    # use a downscaled thumb for the quilt tile; keep the full-res original for
+    # the lightbox (viewer opens data-fullsrc). Thumbs make the quilt load fast.
+    import os
+    thumb = 'media/thumbs/' + os.path.basename(src)
+    if not os.path.exists(ROOT / thumb):
+        thumb = src
+    return {'id': t.get('id'), 'src': thumb, 'fullSrc': src, 'type': t.get('type', 'photo'),
             'w': max(w, 60), 'h': max(h, 60),
             'caption': t.get('cap', 'Ste. Madeleine Métis Days 2026'),
             'title': t.get('title', '')}
 
-def pack_organic(tiles, start_x, start_y, rng):
-    """Pack tiles into a dense, interconnected quilt surface with ZERO gaps.
-    Each tile's left edge abuts the previous tile's right edge exactly (gap 0).
-    Rows overlap vertically so there's no horizontal seam-line either. Organic
-    jitter keeps it from reading as a grid. Varying tile sizes create rhythm."""
+def pack_organic(tiles, start_x, start_y, rng, textures):
+    """Pack tiles into a gapless quilt surface. Photos keep original aspect
+    ratios; texture/filler strips are stretched to seal the gaps that form
+    between varied-height photos. Rows are packed tight and any leftover
+    void at row-end or row-bottom is filled by a texture tile."""
     placed = []
     x, y = start_x, start_y
     row_h = 0
+    row_start_x = start_x
+    ti = 0
     for i, t in enumerate(tiles):
         if x - start_x > 1250:
-            # next row starts WELL into the previous row so its bottom edge
-            # (jagged from varied tile heights) is covered — no voids
-            y += int(row_h * 0.55)
+            # seal the bottom void of the previous row with a wide texture strip
+            if textures:
+                # wide strip spanning the whole row width at the jagged bottom
+                fx, fy = row_start_x, y + int(row_h * 0.72)
+                fw = x - row_start_x
+                fh = max(20, int(row_h * 0.3))
+                placed.append((textures[ti % len(textures)], fx, fy, fw, fh, 'texture'))
+                ti += 1
+            # next row starts well into the previous (covered by the strip above)
+            y += int(row_h * 0.72)
             x = start_x + rng.randint(-8, 8)
+            row_start_x = x
             row_h = 0
         # zero horizontal gap: left edge = previous right edge
-        jitter_y = rng.randint(-8, 8) if i > 0 else 0
-        placed.append((t, x, y + jitter_y))
+        jitter_y = rng.randint(-4, 4) if i > 0 else 0
+        placed.append((t, x, y + jitter_y, t['w'], t['h'], 'photo'))
         x += t['w']
         row_h = max(row_h, t['h'])
+    # final row bottom seal
+    if textures:
+        fw = x - row_start_x
+        placed.append((textures[ti % len(textures)], row_start_x, y + int(row_h * 0.72), fw, max(20, int(row_h * 0.3)), 'texture'))
     return placed
 
 def build():
@@ -76,6 +96,19 @@ def build():
     audios = [t for t in TILES if t['type'] == 'audio']
     scans  = [t for t in TILES if t['type'] == 'sphere']
     rng.shuffle(photos)
+
+    # texture/filler tiles: the strips that stretch to seal gaps (gapless quilt)
+    tex_dir = ROOT / 'media' / 'textures'
+    textures = []
+    if tex_dir.exists():
+        for f in sorted(tex_dir.iterdir()):
+            if f.suffix.lower() in ('.jpg', '.jpeg', '.png'):
+                rel = str(f.relative_to(ROOT))
+                # prefer the downscaled thumb for fast loading
+                thumb = 'media/thumbs/' + f.stem + '.jpg'
+                textures.append(thumb if (ROOT / thumb).exists() else rel)
+    if not textures:
+        textures = ['media/ste-madeleine-sign-tile.png']  # fallback filler
 
     sections = []
 
@@ -96,7 +129,7 @@ def build():
     sections.append({'id':'band-story','title':'The Story','chapter':1,'designWidth':1600,
                      'height':420,'tiles':hist_tiles})
 
-    # ---- Band 1: Reclamation — photos + videos + audio packed organically ----
+    # ---- Band 1: Reclamation — photos + videos + audio packed gaplessly ----
     pool = [('photo', p) for p in photos] + [('video', v) for v in videos] + [('audio', a) for a in audios]
     rng.shuffle(pool)
     seq_tiles = [tile_from_manifest(m, aspect) for _, m in pool]
@@ -104,12 +137,23 @@ def build():
     for (kind, m), t in zip(pool, seq_tiles):
         if kind == 'video': t['type'] = 'video'
         elif kind == 'audio': t['type'] = 'audio'; t['cover'] = 'media/ste-madeleine-sign-tile.png'
-    placed = pack_organic(seq_tiles, 60, 60, rng)
+    placed = pack_organic(seq_tiles, 60, 60, rng, textures)
     reclam_tiles = []
-    for t, px, py in placed:
-        t['x']=px; t['y']=py
-        t['rotate']=rng.choice([-1,0,0,1])
-        reclam_tiles.append(t)
+    ti = 0
+    for entry in placed:
+        if entry[5] == 'texture':
+            # texture filler strip — stretched to seal the gap, croppable
+            t, px, py, pw, ph, _ = entry
+            reclam_tiles.append({'id': 'tex-fill-' + str(ti), 'type': 'texture',
+                                 'src': t, 'x': px, 'y': py, 'w': max(pw, 40), 'h': max(ph, 20),
+                                 'z': 0, 'rotate': 0, 'rx': 0,
+                                 'caption': 'surface of St. Madeleine'})
+            ti += 1
+        else:
+            t, px, py, pw, ph, _ = entry
+            t['x']=px; t['y']=py; t['w']=pw; t['h']=ph
+            t['rotate']=rng.choice([-1,0,0,1])
+            reclam_tiles.append(t)
     # scans at the end
     sx = max((t['x']+t['w'] for t in reclam_tiles), default=60) + 40
     for sc in scans:
