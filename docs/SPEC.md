@@ -43,23 +43,27 @@ Both render the same tile model. If it looks right in the editor, it looks right
 **Key properties:** every tile can be resized to any `w`/`h` (non-square), rotated, layered, and rounded. That's what makes it a collage, not a contact sheet.
 
 ## 3. Editor behavior
-- **Section canvas** — one chapter at a time. Height is the section height; tiles position within it.
+- **Band canvas** — works on the same free-2D surface (the whole quilt), not one chapter at a time. Tiles position in the shared coordinate space.
 - **Tools:** select, drag-move, resize (handles + corners), rotate, z-order (bring forward/send back), corner radius, object-fit toggle, delete, duplicate.
-- **Add media:** drag from a media drawer (thumbnails of all 200 + land/texture) onto the canvas.
-- **Land/texture as background:** a section can have a bg image the tiles sit on — the "quilt backing."
+- **Add media:** drag from a media drawer (thumbnails of all 204) onto the canvas.
+- **Mark-as-land:** toggle to tag plant/cemetery/landscape shots as `land` (the stitching) — Bayard's curation, since filenames don't reliably distinguish people from land.
+- **Land/texture as background:** a band can have a bg image the tiles sit on (the "quilt backing").
 - **Layers panel:** list tiles in z-order, select/rename/hide.
-- **AI seed:** button generates a proposed starting layout for the current section; Bayard rearranges.
-- **Save:** writes section back to layout.json. Draft state auto-saved in localStorage so no work is lost.
-- **Multiple sections:** a section navigator (ch1…ch5 + any Bayard adds) to move between chapters.
+- **AI seed:** button generates a proposed starting layout; Bayard rearranges.
+- **Save:** writes layout.json (POST /save-layout). Auto-save draft in localStorage so no work is lost.
 
 ## 4. Viewer behavior
-- **Endless vertical scroll**, sections stitched top-to-bottom in chapter order.
-- **Tiles render exactly as authored:** size, shape, rotation, layer, radius, fit.
+- **One continuous 2D canvas** (NOT a vertical scroll). Drag/pan in ALL directions
+  (mouse + touch), wheel + pinch zoom. Intro gate → then free exploration.
+- **Tiles packed interconnected** — edges touching/overlapping, organic/staggered,
+  NOT a grid. Preserves original aspect ratios (no square crops, no reflow columns).
+- **Videos autoplay on loop** when scrolled into view (viewport intersection check),
+  pause when out of view.
 - **Photo:** click → lightbox with caption.
-- **Video:** inline play, muted-autoplay optional (tile is a video player).
-- **Audio:** click → audio player (inline waveform/play button), tile shows a cover image + play control.
-- **Scan (GLB):** tile shows a poster frame; click → inline interactive 3D viewer (drag-orbit) — **first-class**, not a separate tab.
-- **Scroll feel:** gentle parallax / fade on land-texture backgrounds, tiles settle into place. Must feel designed, not like a page of images.
+- **Audio:** click → lightbox audio player.
+- **Scan (GLB):** click → inline interactive 3D viewer (model-viewer, local).
+- **Gentle narrative flow:** the story (history → reclamation) pulls the viewer
+  across the surface, but there is no rigid left-to-right reading order.
 
 ## 5. Tech stack (free, local)
 - Plain HTML/CSS/JS, no build step (consistent with this repo's serving model).
