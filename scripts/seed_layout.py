@@ -35,7 +35,7 @@ def tile_from_manifest(t, aspect):
     src = t['src']
     ar = aspect.get(src, 1.0)
     rng = random.Random(hash(src) & 0xffff)
-    base = rng.choice([200, 220, 240, 260, 280, 300])
+    base = rng.choice([140, 160, 180, 200, 240, 280, 320, 380, 420])
     if ar >= 1:
         w, h = base, int(base / ar)
     else:
@@ -46,23 +46,25 @@ def tile_from_manifest(t, aspect):
             'title': t.get('title', '')}
 
 def pack_organic(tiles, start_x, start_y, rng):
-    """Pack tiles left-to-right in staggered rows, edges touching.
-    Organic: each row starts at a slight random offset and tiles have small
-    vertical jitter so it's not a strict grid."""
+    """Pack tiles into a dense, interconnected quilt surface with ZERO gaps.
+    Each tile's left edge abuts the previous tile's right edge exactly (gap 0).
+    Rows overlap vertically so there's no horizontal seam-line either. Organic
+    jitter keeps it from reading as a grid. Varying tile sizes create rhythm."""
     placed = []
     x, y = start_x, start_y
     row_h = 0
-    first = True
     for i, t in enumerate(tiles):
         if x - start_x > 1250:
-            y += row_h + 2
-            x = start_x + (rng.randint(-8, 8) if not first else 0)
+            # next row starts WELL into the previous row so its bottom edge
+            # (jagged from varied tile heights) is covered — no voids
+            y += int(row_h * 0.55)
+            x = start_x + rng.randint(-8, 8)
             row_h = 0
-        jitter_y = rng.randint(-3, 3) if i > 0 else 0
+        # zero horizontal gap: left edge = previous right edge
+        jitter_y = rng.randint(-8, 8) if i > 0 else 0
         placed.append((t, x, y + jitter_y))
-        x += t['w'] + rng.randint(0, 2)
+        x += t['w']
         row_h = max(row_h, t['h'])
-        first = False
     return placed
 
 def build():
