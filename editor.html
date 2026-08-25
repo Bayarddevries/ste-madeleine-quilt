@@ -272,9 +272,13 @@ stage.addEventListener('drop',e=>{
   }
 });
 
-/* ---- load embedded tiles from the quilt (passed via URL hash) ---- */
-const params=new URLSearchParams(location.search);
-const embedded=params.get('tiles');
+/* ---- load embedded tiles from the quilt (passed via sessionStorage or URL fallback) ---- */
+let embedded = sessionStorage.getItem('quiltTiles');
+if (!embedded) {
+  // Fallback: try URL param (for direct editor.html?tiles=... links)
+  const params = new URLSearchParams(location.search);
+  embedded = params.get('tiles');
+}
 loadTiles(embedded);
 frameContent();
 </script>

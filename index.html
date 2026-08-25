@@ -341,11 +341,11 @@ function frameContent(){
 /* ============ view all ============ */
 document.getElementById('viewall').addEventListener('click', frameContent);
 document.getElementById('edit').addEventListener('click', ()=>{
-  // pass a compact copy of the tiles to the editor via URL
+  // pass a compact copy of the tiles to the editor via sessionStorage (avoids URL length limits)
   const slim = TILES.map(t=>({id:t.id,type:t.type,x:Math.round(t.x),y:Math.round(t.y),
     w:Math.round(t.w||t.s),h:Math.round(t.h||t.s),src:t.src||null,title:t.title,cap:t.cap,dur:t.dur}));
-  const q = '?tiles='+encodeURIComponent(JSON.stringify(slim));
-  window.open('editor.html'+q, '_blank');
+  sessionStorage.setItem('quiltTiles', JSON.stringify(slim));
+  window.open('editor.html', '_blank');
 });
 
 /* ============ detail overlay ============ */
