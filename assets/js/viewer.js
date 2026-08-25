@@ -1,7 +1,14 @@
 /* Ste. Madeleine Quilt — Free-pan 2D canvas viewer.
-   The whole quilt is laid out on ONE large surface. Drag to pan in any
-   direction, wheel/pinch to zoom. Videos autoplay when scrolled into view.
-   Uses the shared renderer (WYSIWYG with the editor).
+   ENDLESS horizontal wrap (torus): the quilt's content is tiled 3× side-by-side
+   on a surface of width 3W (W = one copy of the content width). The horizontal
+   camera (tx) is wrapped modulo W, so panning far left or right loops back
+   around seamlessly — the content repeats every W so the snap lands on
+   identical pixels and there is no visible seam or gap. Vertical stays finite.
+   Images are lazy-mounted via IntersectionObserver: only tiles approaching the
+   viewport actually load their <img src>, so the initial page doesn't fire all
+   ~200 image requests at once. Pan, zoom, video autoplay (cap 2), and the lazy
+   3D-scan model-viewer are all preserved. Uses the shared renderer (WYSIWYG
+   with the editor).
 */
 (function () {
   'use strict';
@@ -15,14 +22,24 @@
   let dragging = false;
   let lastX = 0, lastY = 0;
   let pinchDist = null;
+  let W = 0;                   // content width of ONE copy (the wrap period)
 
   function setTransform() {
     surface.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
   }
 
+  // Wrap the horizontal camera into [0, W). Because the content repeats every
+  // W pixels, wrapping to a whole-multiple-of-W offset shows identical pixels,
+  // so the loop-back is seamless (no jump, no seam).
+  function wrapTx() {
+    if (W <= 0) return;
+    const w = ((tx % W) + W) % W;
+    if (w !== tx) { tx = w; setTransform(); }
+  }
+
   function centerView() {
     const vw = viewport.clientWidth, vh = viewport.clientHeight;
-    tx = vw / 2 - (surface.dataset.sw || 1600) / 2;
+    tx = 0;   // start at the left edge; wrap handles looping thereafter
     ty = vh / 2 - (surface.dataset.sh || 1200) / 2;
     setTransform();
   }
@@ -40,6 +57,7 @@
     ty += e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
     setTransform();
+    wrapTx();
   }
   function endPan() {
     dragging = false;
@@ -62,6 +80,7 @@
     tx = cx - rect.left - px * scale;
     ty = cy - rect.top - py * scale;
     setTransform();
+    wrapTx();
     updateVisibleVideos();
   }
 
@@ -138,7 +157,29 @@
     document.body.appendChild(lb);
   }
 
-  // ---- Build surface from layout ----
+  // ---- Lazy media mounting (IntersectionObserver) ----
+  // For a photo tile, move the src into data-src and DON'T set img.src yet, so
+  // the browser doesn't fetch it until the tile nears the viewport.
+  function deferImage(tile) {
+    const img = tile.querySelector('img.q-media');
+    if (img && !img.dataset.src && img.getAttribute('src')) {
+      img.dataset.src = img.getAttribute('src');
+      img.removeAttribute('src');
+    }
+  }
+
+  // Load a tile's media. Idempotent: a photo mounts only once.
+  function mountTile(tile) {
+    const img = tile.querySelector('img.q-media');
+    if (img && img.dataset.src && !img.src) {
+      img.src = img.dataset.src;
+      img.style.opacity = '0';
+      img.style.transition = 'opacity .35s ease';
+      img.addEventListener('load', () => { img.style.opacity = '1'; });
+    }
+  }
+
+  // ---- Build surface from layout (tiled 3× horizontally) ----
   async function build() {
     const res = await fetch('layout.json');
     const data = await res.json();
@@ -152,22 +193,46 @@
     });
     if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 1600; maxY = 1200; }
     const pad = 200;
-    surface.style.width = (maxX - minX + pad * 2) + 'px';
-    surface.style.height = (maxY - minY + pad * 2) + 'px';
-    surface.dataset.sw = maxX - minX + pad * 2;
-    surface.dataset.sh = maxY - minY + pad * 2;
+    W = maxX - minX + pad * 2;                    // one copy's width  = wrap period
+    const H = maxY - minY + pad * 2;
+    surface.style.width = (W * 3) + 'px';         // 3 copies side by side
+    surface.style.height = H + 'px';
+    surface.dataset.sw = W * 3;
+    surface.dataset.sh = H;
 
-    // Place each section's tiles translated so bbox starts at pad
+    // IntersectionObserver: mount (start loading) tiles as they approach the
+    // viewport, with a generous margin so panning feels smooth. Once mounted,
+    // the tile is unobserved (stays loaded if you pan away and back).
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) { mountTile(en.target); io.unobserve(en.target); }
+      });
+    }, { root: viewport, rootMargin: '50% 50% 50% 50%', threshold: 0 });
+
     data.sections.forEach((s) => {
       (s.tiles || []).forEach((t) => {
-        const tile = window.QuiltRenderer.renderTile(t);
-        tile.style.left = (t.x - minX + pad) + 'px';
-        tile.style.top = (t.y - minY + pad) + 'px';
-        // tag for lightbox
-        tile.dataset.caption = t.caption || t.title || '';
-        tile.dataset.src = t.src || '';
-        tile.dataset.type = t.type || 'photo';
-        surface.appendChild(tile);
+        const baseLeft = t.x - minX + pad;
+        const baseTop = t.y - minY + pad;
+        // three copies: left, centre, right — enables seamless loop
+        for (let k = 0; k < 3; k++) {
+          const tile = window.QuiltRenderer.renderTile(t);
+          tile.style.left = (baseLeft + k * W) + 'px';
+          tile.style.top = baseTop + 'px';
+          // tag for lightbox
+          tile.dataset.caption = t.caption || t.title || '';
+          tile.dataset.src = t.src || '';
+          tile.dataset.type = t.type || 'photo';
+          surface.appendChild(tile);
+
+          if (t.type === 'photo') {
+            // heavy image: defer fetch until the tile nears the viewport
+            deferImage(tile);
+            io.observe(tile);
+          } else {
+            // video / audio / scan / texture / text are few and light: mount now
+            mountTile(tile);
+          }
+        }
       });
     });
 
@@ -236,8 +301,8 @@
   // keyboard arrows to nudge
   window.addEventListener('keydown', (e) => {
     const step = 60;
-    if (e.key === 'ArrowLeft') { tx += step; setTransform(); updateVisibleVideos(); }
-    if (e.key === 'ArrowRight') { tx -= step; setTransform(); updateVisibleVideos(); }
+    if (e.key === 'ArrowLeft') { tx += step; setTransform(); wrapTx(); updateVisibleVideos(); }
+    if (e.key === 'ArrowRight') { tx -= step; setTransform(); wrapTx(); updateVisibleVideos(); }
     if (e.key === 'ArrowUp') { ty += step; setTransform(); updateVisibleVideos(); }
     if (e.key === 'ArrowDown') { ty -= step; setTransform(); updateVisibleVideos(); }
   });
