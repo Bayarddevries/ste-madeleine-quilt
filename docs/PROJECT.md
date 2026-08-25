@@ -20,6 +20,10 @@
 `media/` other:
 - `memory-wall/` (3 files), `timeline/` (10 incl. flag GIF), flag loops, wordmark/sign assets, Barlow font.
 
+**Land/texture tiles:** NOT external — they are the plant/cemetery/landscape photos
+already inside `weekend-2026/`. The AI seed must classify photos as **people** vs
+**land/plants** and interleave them (people ⇄ land rhythm) per INTENT.md.
+
 ## The 5 narrative chapters (from existing timeline research)
 1. **Thriving Community** (1870s–1938) — Métis homesteaders settle Ste. Madeleine
 2. **Devastation** (1935–1938) — PFRA displaces the community, church burned
