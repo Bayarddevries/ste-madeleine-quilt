@@ -29,6 +29,26 @@
   `audio`, `land`, `text`). The seed's `people` classifier is a CURATION TAG — map it
   to `photo` before saving, or the reflow filter silently drops 197 tiles.
 
+### 1b. Free-pan 2D quilt canvas (current model — overrides the vertical-scroll reflow)
+- **The quilt is now ONE continuous 2D canvas** (not a vertical page): drag/pan in
+  all directions, wheel+pinch zoom. The viewer renders every tile on a large surface
+  and applies `translate(x,y) scale()` to the camera.
+- **Dense interconnection (the core ask):** pack tiles with ZERO gaps — each tile's
+  left edge abuts the previous right edge exactly; rows overlap ~45% vertically so
+  the jagged row-bottom (from varied tile heights) is covered — no voids. Target
+  coverage ≈105% (tiles overlap slightly). This makes it read as a quilt surface,
+  not a grid.
+- **Vary sizes** for rhythm: base tile length 140-420px (some enlarged, some shrunk),
+  preserving ORIGINAL aspect ratio (w/h from the file via PIL probe).
+- **Videos autoplay on loop** when scrolled into view (viewport intersection check
+  with throttling), pause when out of view.
+
+### 1c. People-vs-land curation
+- Filenames do NOT reliably separate people from land/plant/cemetery shots.
+  That classification is Bayard's curation job — use a **mark-as-land toggle** in the
+  editor, and let the AI seed re-weave tagged land tiles as the "stitching" between
+  people clusters.
+
 ### 2. Tile inspector (inspired by Beautiful UI's "Fine-tune Card")
 - The editor's right panel edits the selected tile: X/Y, W/H, Rotation, Radius,
   object-fit, caption, plus layering (front/back/up/down), duplicate, delete.
