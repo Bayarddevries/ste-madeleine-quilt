@@ -51,12 +51,13 @@
       return;
     }
     stageBgLabel.style.display = 'none';
+    stage.style.width = (section.designWidth || 1200) + 'px';
     stage.style.height = section.height + 'px';
     stage.style.backgroundImage = section.background ? "url('" + section.background + "')" : '';
     stage.style.backgroundSize = 'cover';
     stage.style.backgroundPosition = 'center';
     // clear any leftover bg label / reuse renderer
-    window.QuiltRenderer.renderSection(stage, section);
+    window.QuiltRenderer.renderSection(stage, section, { noScale: true });
     // make tiles selectable
     stage.querySelectorAll('.q-tile').forEach((el) => {
       el.dataset.id = el.dataset.id || '';

@@ -116,13 +116,23 @@
   async function init() {
     const res = await fetch('layout.json');
     const data = await res.json();
-    (data.sections || []).forEach((section) => {
-      window.QuiltRenderer.renderSection(scroll, section);
-    });
+    let timer;
+    function renderAll() {
+      scroll.innerHTML = '';
+      (data.sections || []).forEach((section) => {
+        window.QuiltRenderer.renderSection(scroll, section);
+      });
+      // re-stamp tile captions after each render
+      scroll.querySelectorAll('.q-tile').forEach((t) => {
+        if (t.dataset.caption == null) t.dataset.caption = t.querySelector('.q-caption')?.textContent || '';
+      });
+    }
+    renderAll();
     bindEvents();
-    // stamp tile captions for lightbox delegation
-    scroll.querySelectorAll('.q-tile').forEach((t) => {
-      if (t.dataset.caption == null) t.dataset.caption = t.querySelector('.q-caption')?.textContent || '';
+    // re-render on resize (mobile reflow / orientation changes)
+    window.addEventListener('resize', () => {
+      clearTimeout(timer);
+      timer = setTimeout(renderAll, 150);
     });
   }
 

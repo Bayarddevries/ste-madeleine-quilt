@@ -39,6 +39,7 @@ def build_sections():
         "id": "ch1-thriving",
         "title": "Thriving Community",
         "chapter": 1,
+        "designWidth": 1100,
         "height": 1400,
         "background": "media/ste-madeleine-sign-tile.png",
         "tiles": [
@@ -56,6 +57,7 @@ def build_sections():
         "id": "ch2-devastation",
         "title": "Devastation",
         "chapter": 2,
+        "designWidth": 900,
         "height": 1400,
         "tiles": [
             {"id":"t2a","type":"text","x":120,"y":280,"w":520,"h":300,
@@ -69,6 +71,7 @@ def build_sections():
         "id": "ch3-resistance",
         "title": "Resistance",
         "chapter": 3,
+        "designWidth": 900,
         "height": 1400,
         "tiles": [
             {"id":"t3a","type":"text","x":100,"y":260,"w":560,"h":300,
@@ -82,6 +85,7 @@ def build_sections():
         "id": "ch4-remembrance",
         "title": "Remembrance",
         "chapter": 4,
+        "designWidth": 900,
         "height": 1400,
         "tiles": [
             {"id":"t4a","type":"text","x":120,"y":280,"w":520,"h":300,
@@ -96,6 +100,7 @@ def build_sections():
         "id": "ch5-reclamation",
         "title": "Reclamation",
         "chapter": 5,
+        "designWidth": 1500,
         "height": 4200,
         "tiles": [],
     }
@@ -124,6 +129,9 @@ def build_sections():
             tile['rotate'] = 0
             tile['rx'] = 12
             tile['poster'] = 'media/ste-madeleine-sign-tile.png'
+        # 'people' is a curation tag, not a render type: keep render type 'photo'
+        if kind == 'people':
+            tile['type'] = 'photo'
         sec5['tiles'].append(tile)
         # advance; wrap row every ~4 tiles
         x += w + spacing

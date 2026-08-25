@@ -29,9 +29,40 @@ body {
   width: 100%;
 }
 
-.q-section {
+.q-section-scroll {
   position: relative;
   width: 100%;
+  overflow: visible;
+}
+
+/* Mobile reflow layout */
+.q-reflow-body {
+  position: relative;
+  width: 100%;
+  padding-top: 6px;
+}
+.q-reflow-grid {
+  position: relative;
+}
+.q-reflow-col {
+  position: relative;
+}
+.q-reflow-col .reflow-tile {
+  position: relative !important;
+  margin: 0;
+}
+.q-reflow-col .q-tile.selected,
+.q-reflow-col .q-tile:hover {
+  outline: none;
+}
+.q-reflow-body .q-chapter-title {
+  position: relative;
+  padding: 40px 20px 20px;
+  background: linear-gradient(rgba(26,18,11,0.9), rgba(26,18,11,0.4));
+}
+
+.q-section {
+  position: relative;
   overflow: hidden;
   background: var(--bg-2);
 }
