@@ -6,7 +6,8 @@ free-pan 2D canvas.
 
 NOTE on people-vs-land: filenames don't reliably separate people from land/plant
 shots (PXL/_MG_/IMG all contain both). That classification is Bayard's curation
-job in the editor (mark-as-land toggle). This seed treats all photos as photos.
+job in the editor (Kind: People/Land toggle). This seed defaults every tile to
+'kind':'people'; mark the land/plant/cemetery/landscape shots as Land in the editor.
 
 The result is a STARTING POINT that Bayard rearranges in the editor.
 Run:  python3 scripts/seed_layout.py
@@ -47,53 +48,49 @@ def tile_from_manifest(t, aspect):
     if not os.path.exists(ROOT / thumb):
         thumb = src
     return {'id': t.get('id'), 'src': thumb, 'fullSrc': src, 'type': t.get('type', 'photo'),
+            'kind': 'people',  # curation flag: 'people'|'land' (default people; mark land in editor)
             'w': max(w, 60), 'h': max(h, 60),
             'caption': t.get('cap', 'Ste. Madeleine Métis Days 2026'),
             'title': t.get('title', '')}
 
-def pack_gapless(tiles, textures, start_x, start_y, rng):
-    """Pack a gapless quilt using the TEXTURES AS BACKING approach.
 
-    The texture images form a full-surface backing cloth (they fill 100% of the
-    area, so nothing can show through). People-photos are placed on top at their
-    ORIGINAL aspect ratio (never cropped/stretched) with small seams between
-    them — the backing shows through the seams as 'stitching'.
-
-    Gapless BY CONSTRUCTION: the backing covers the whole bbox.
-    Returns list of (tile_or_texturepath, x, y, w, h, kind)."""
+def pack_organic(tiles, textures, start_x, start_y, rng):
+    # Staggered column packing: columns start at different y (no aligned rows),
+    # tiles varied size/rotate/overlap, textures placed SMALL between clusters.
     placed = []
-
-    # ---- 1. Pack photos in a dense cascade with small seams ----
-    seam = 6
-    x, y = start_x, start_y
-    row_h = 0
-    row_start_x = start_x
-    max_row_w = 2200
-    for t in tiles:
-        tw, th = t['w'], t['h']
-        # wrap to next row if this tile would overflow
-        if (x - start_x) + tw > max_row_w and row_h > 0:
-            y += row_h + seam
-            x = row_start_x
-            row_h = 0
-        placed.append((t, x, y, tw, th, 'photo'))
-        x += tw + seam
-        row_h = max(row_h, th)
-
-    # ---- 2. Backing: stretch textures to cover the WHOLE surface (gapless) ----
-    if placed and textures:
-        minx = min(p[1] for p in placed)
-        miny = min(p[2] for p in placed)
-        maxx = max(p[1] + p[3] for p in placed)
-        maxy = max(p[2] + p[4] for p in placed)
-        bw = maxx - minx + seam * 2
-        bh = maxy - miny + seam * 2
-        # tile textures across the backing (3 columns) for varied cloth
-        ncol = 3
-        col_w = bw / ncol
-        for ci in range(ncol):
+    # Columns: 6 vertical strips; distribute tiles round-robin for balance
+    ncol = 9
+    # Assign tiles to columns by shuffling then distributing
+    cols = [[] for _ in range(ncol)]
+    sh = tiles[:]; rng.shuffle(sh)
+    for i,t in enumerate(sh): cols[i % ncol].append(t)
+    # Column x positions with small gaps (= seams)
+    col_w = 250
+    for ci, col in enumerate(cols):
+        cx = start_x + ci * (col_w + 4)
+        cy = start_y + ci * 90 + rng.randint(-30, 30)  # staggered starts
+        # Stack in column with small overlaps and seams
+        y_cursor = cy
+        # Small texture accent between clusters (every ~5th tile or at column start/end)
+        if ci > 0 and textures:
             tex = textures[ci % len(textures)]
-            placed.append((tex, minx + ci * col_w, miny, col_w, bh, 'backing'))
+            # Small stitch: ~80x40, z=0, near column top
+            placed.append((tex if isinstance(tex,str) else tex, cx-20, y_cursor-25, 85, 45, 'stitch'))
+        for j,t in enumerate(col):
+            tw, th = t['w'], t['h']
+            # Slight rotate
+            rot = rng.randint(-3, 3)
+            # Small overlap with previous (y decreases slightly) or gap
+            overlap = rng.choice([14, 20, 30])
+            y_cursor = max(start_y, y_cursor - overlap + (6 if j>0 else 0))
+            # Slight x jitter within column
+            jx = cx + rng.randint(-15, 15)
+            placed.append((t, jx, y_cursor, tw, th, 'photo'))
+            y_cursor += th - overlap
+        # Stitch at bottom of column
+        if textures and ci < ncol-1:
+            tex = textures[(ci+3)%len(textures)]
+            placed.append((tex if isinstance(tex,str) else tex, cx+col_w-40, y_cursor+10, 90, 50, 'stitch'))
     return placed
 
 def build():
@@ -146,25 +143,18 @@ def build():
     for (kind, m), t in zip(pool, seq_tiles):
         if kind == 'video': t['type'] = 'video'
         elif kind == 'audio': t['type'] = 'audio'; t['cover'] = 'media/ste-madeleine-sign-tile.png'
-    placed = pack_gapless(seq_tiles, textures, 60, 60, rng)
+    placed = pack_organic(seq_tiles, textures, 60, 60, rng)
     reclam_tiles = []
-    ti = 0
     for entry in placed:
         kind = entry[5]
         t, px, py, pw, ph, _ = entry
-        if kind == 'backing':
-            # backing cloth — stretched to cover the whole surface, z=0 (under photos)
-            reclam_tiles.append({'id': 'backing-' + str(ti), 'type': 'texture',
-                                 'src': t, 'x': int(px), 'y': int(py),
-                                 'w': int(pw), 'h': int(ph),
-                                 'z': 0, 'rotate': 0, 'rx': 0,
-                                 'caption': 'surface of St. Madeleine'})
-            ti += 1
+        if kind == 'stitch':
+            reclam_tiles.append({'id':'stitch-'+str(px)+str(py),'type':'texture','src':t,'x':int(px),'y':int(py),'w':int(pw),'h':int(ph),'z':0,'rotate':0,'rx':0,'caption':'stitch'})
         else:
-            # photo — keeps original aspect ratio, z=1 (above backing)
             t['x']=int(px); t['y']=int(py); t['w']=int(pw); t['h']=int(ph)
-            t['z']=1
-            t['rotate']=0
+            t['z']=2 if t.get('type')=='video' else 1
+            t['rotate']=rng.randint(-3,3)
+            t['rx']=t['w']//2
             reclam_tiles.append(t)
     # scans at the end
     sx = max((t['x']+t['w'] for t in reclam_tiles), default=60) + 40
@@ -178,7 +168,7 @@ def build():
     return {'sections': sections, 'meta': {
         'title': 'Ste. Madeleine — A Quilt of Memory & Reclamation',
         'generated': 'organic-seed-v3',
-        'note': 'Free-pan 2D quilt. Tiles packed interconnected at original aspect ratios. Rearrange + mark land tiles in the editor.'
+        'note': 'Free-pan 2D quilt. Tiles packed interconnected at original aspect ratios. Rearrange + mark land tiles (Kind: Land) in the editor.'
     }}
 
 def main():

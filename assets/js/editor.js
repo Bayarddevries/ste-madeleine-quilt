@@ -62,6 +62,11 @@
     stage.querySelectorAll('.q-tile').forEach((el) => {
       el.dataset.id = el.dataset.id || '';
     });
+    // land badges
+    stage.querySelectorAll('.q-tile').forEach((el) => {
+      const t = tileById(el.dataset.id);
+      if (t) applyKindBadge(el, t);
+    });
     renderSectionNav();
     if (state.selectedId) selectTile(state.selectedId, false);
   }
@@ -137,6 +142,10 @@
         '<option value="cover"' + (tile.objectFit!=='contain'?' selected':'') + '>Cover (fill, crop)</option>' +
         '<option value="contain"' + (tile.objectFit==='contain'?' selected':'') + '>Contain (whole)</option>' +
       '</select></div>' +
+      '<div class="field"><label>Kind</label><select data-k="kind">' +
+        '<option value="people"' + (tile.kind!=='land'?' selected':'') + '>People</option>' +
+        '<option value="land"' + (tile.kind==='land'?' selected':'') + '>Land (plants / cemetery / landscape)</option>' +
+      '</select></div>' +
       '<div class="field"><label>Caption</label><input type="text" value="' + (tile.caption||'') + '" data-k="caption"></div>' +
       '<hr>' +
       '<div class="row">' +
@@ -169,6 +178,22 @@
   }
 
   // ---- Apply tile props to its DOM element (live update) ----
+  function applyKindBadge(el, tile) {
+    if (!el) return;
+    let badge = el.querySelector(':scope > .q-kind-badge');
+    const isLand = tile && tile.kind === 'land';
+    if (isLand) {
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'q-kind-badge';
+        badge.textContent = 'LAND';
+        el.appendChild(badge);
+      }
+    } else if (badge) {
+      badge.remove();
+    }
+  }
+
   function applyTileToDom(tile) {
     const el = stage.querySelector('.q-tile[data-id="' + CSS.escape(tile.id) + '"]');
     if (!el) return;
@@ -183,6 +208,7 @@
     if (inner && tile.objectFit) inner.style.objectFit = tile.objectFit;
     const cap = el.querySelector('.q-caption');
     if (cap) cap.textContent = tile.caption || '';
+    applyKindBadge(el, tile);
   }
 
   // ---- Tile actions ----

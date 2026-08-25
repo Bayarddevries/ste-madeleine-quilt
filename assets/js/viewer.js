@@ -67,8 +67,9 @@
 
   // ---- Video autoplay when scrolled into view ----
   let lastCheck = 0;
+  let playingCount = 0;
   function updateVisibleVideos() {
-    // throttle to ~4Hz
+    // throttle to ~4Hz, cap concurrent plays to 2
     const now = Date.now();
     if (now - lastCheck < 250) return;
     lastCheck = now;
@@ -76,13 +77,17 @@
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const pad = Math.max(rect.width, rect.height);
-    surface.querySelectorAll('video').forEach((v) => {
+    playingCount = 0;
+    const videos = Array.from(surface.querySelectorAll('video'));
+    videos.forEach((v) => { if (!v.paused) playingCount++; });
+    videos.forEach((v) => {
       const r = v.getBoundingClientRect();
       const inView = r.right > rect.left - pad && r.left < rect.right + pad &&
                      r.bottom > rect.top - pad && r.top < rect.bottom + pad;
-      if (inView) {
+      if (inView && playingCount < 2) {
         const p = v.play();
         if (p) p.catch(() => {});
+        if (!v.paused) playingCount++;
       } else {
         v.pause();
       }
@@ -103,6 +108,11 @@
     const src = node.dataset.src || node.src;
 
     if (node.dataset.type === 'scan') {
+      if (!window.customElements.get('model-viewer')) {
+        const s = document.createElement('script');
+        s.type = 'module'; s.src = 'media/vendor/model-viewer.min.js';
+        document.head.appendChild(s);
+      }
       const mv = document.createElement('model-viewer');
       mv.setAttribute('src', src);
       mv.setAttribute('camera-controls', '');
