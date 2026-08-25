@@ -65,7 +65,10 @@ Both render the same tile model. If it looks right in the editor, it looks right
 - Plain HTML/CSS/JS, no build step (consistent with this repo's serving model).
 - `layout.json` served alongside; editor fetches + writes it.
 - **3D viewer:** use a local, vendored GLB loader (model-viewer static bundle already downloaded — the `excalidraw-0.18.1.tgz` was the wrong experiment; vendor `@google/model-viewer` or a small Three.js loader locally, free).
-- Serving: local Python http server (existing 8090 pattern) — no framework needed.
+- Serving: `python3 serve.py 8090` (custom server — serves static files AND accepts
+  POST `/save-layout` to write layout.json, so the editor can persist). Binds 0.0.0.0
+  for Tailscale access. NOT the plain `python3 -m http.server` (that rejects POST).
+- **3D viewer:** local vendored `media/vendor/model-viewer.min.js` (already in repo, free).
 
 ## 6. File layout (replaces fragmented legacy)
 ```
