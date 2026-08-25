@@ -3,284 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quilt Layout Editor</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Barlow Condensed',Georgia,serif;background:#14100c;color:#e8dcc0;overflow:hidden}
-  #toolbar{position:fixed;top:0;left:0;right:0;height:46px;display:flex;align-items:center;gap:10px;
-    padding:0 12px;background:rgba(30,22,14,.94);border-bottom:1px solid #3a2d1e;z-index:40;font-size:14px}
-  #toolbar .brand{font-weight:bold;letter-spacing:1px;color:#f7efe0}
-  #toolbar .sep{width:1px;height:22px;background:#3a2d1e}
-  #toolbar .btn{background:rgba(255,255,255,.06);border:1px solid #4a3a26;color:#e8dcc0;padding:6px 12px;
-    border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px}
-  #toolbar .btn:hover{background:rgba(255,255,255,.12)}
-  #toolbar .btn.primary{background:var(--crimson,#b3362a);border-color:#b3362a;color:#fff}
-  #toolbar .hint{color:#9a8a70;font-size:12px;margin-left:auto}
-  #status{color:#b3a888;font-size:12px}
-  #stage{position:fixed;top:46px;left:0;right:0;bottom:0;overflow:hidden;cursor:grab;
-    background:radial-gradient(circle at 50% 40%,#2a2116,#17110a 70%)}
-  #stage.dragging{cursor:grabbing}
-  #world{position:absolute;top:0;left:0;transform-origin:0 0}
-  .tile{position:absolute;border:2px solid rgba(255,255,255,.75);border-radius:8px;background:#2a2116;
-    box-shadow:0 3px 12px rgba(0,0,0,.5);touch-action:none}
-  .tile.selected{border-color:#ffd479;box-shadow:0 0 0 2px #ffd479,0 4px 18px rgba(0,0,0,.6)}
-  .tile .body{position:absolute;inset:0;overflow:hidden;border-radius:6px}
-  .tile .body img,.tile .body video{width:100%;height:100%;object-fit:contain;pointer-events:none}
-  .tile .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,#3a2d1e,#1f1710);gap:6px;font-size:13px;color:#b3a888}
-  .tile .em{font-size:26px}
-  .tile .label{position:absolute;left:4px;top:4px;font-size:11px;color:#fff;background:rgba(0,0,0,.55);
-    padding:2px 7px;border-radius:5px;pointer-events:none;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}
-  .tile .id{position:absolute;right:4px;top:4px;font-size:10px;color:#ffd479;background:rgba(0,0,0,.5);
-    padding:1px 6px;border-radius:5px;pointer-events:none;font-family:monospace}
-  .handle{position:absolute;width:16px;height:16px;background:#ffd479;border:2px solid #14100c;border-radius:3px;display:none}
-  .tile.selected .handle{display:block}
-  .handle.se{right:-9px;bottom:-9px;cursor:nwse-resize}
-  .handle.nw{left:-9px;top:-9px;cursor:nwse-resize}
-  #panel{position:fixed;right:12px;top:60px;width:250px;background:rgba(30,22,14,.94);border:1px solid #3a2d1e;
-    border-radius:12px;padding:14px;z-index:40;font-size:13px;display:none}
-  #panel h3{margin-bottom:10px;color:#f7efe0;font-size:14px}
-  #panel label{display:block;margin:8px 0 3px;color:#b3a888;font-size:11px;letter-spacing:.5px}
-  #panel input[type=text],#panel input[type=number]{width:100%;background:#0f0b06;border:1px solid #4a3a26;
-    color:#e8dcc0;padding:5px 8px;border-radius:6px;font-family:inherit}
-  #panel .row{display:flex;gap:8px}
-  #panel .row > div{flex:1}
-  #panel .del{margin-top:12px;width:100%;background:#7a1f1a;border:none;color:#fff;padding:7px;border-radius:8px;cursor:pointer}
-  #grid{position:absolute;inset:0;pointer-events:none;background-image:
-    linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
-    background-size:80px 80px}
-  #dropzone{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(30,22,14,.92);
-    border:1px dashed #6a5436;padding:8px 18px;border-radius:10px;font-size:13px;color:#b3a888;z-index:40}
-</style>
+<title>Ste. Madeleine — Quilt Composition Studio</title>
+<link rel="stylesheet" href="assets/css/quilt.css">
+<link rel="stylesheet" href="assets/css/editor.css">
 </head>
 <body>
-<div id="toolbar">
-  <span class="brand">Quilt Layout Editor</span>
-  <span class="sep"></span>
-  <button class="btn" id="viewall">◉ view all</button>
-  <button class="btn" id="add">＋ add tile</button>
-  <button class="btn" id="addgif">＋ gif</button>
-  <button class="btn" id="addaudio">＋ audio</button>
-  <button class="btn primary" id="export">⬇ export JSON</button>
-  <button class="btn" id="import">⇧ import JSON</button>
-  <span class="sep"></span>
-  <span id="status"></span>
-  <span class="hint">drag to move · corner to resize · scroll to zoom · select tile</span>
-</div>
-<div id="stage"><div id="grid"></div><div id="world"></div></div>
-<div id="dropzone">drop media here to add a tile</div>
-<div id="panel">
-  <h3>Tile</h3>
-  <label>Title</label><input id="f-title" type="text">
-  <label>Caption</label><input id="f-cap" type="text">
-  <label>Type</label><input id="f-type" type="text">
-  <label>src</label><input id="f-src" type="text">
-  <div class="row">
-    <div><label>X (center)</label><input id="f-x" type="number"></div>
-    <div><label>Y (center)</label><input id="f-y" type="number"></div>
+  <!-- Top toolbar -->
+  <div id="toolbar">
+    <span class="brand">Quilt Studio</span>
+    <div class="tool-group" id="section-nav"></div>
+    <div class="spacer"></div>
+    <button id="add-media-btn" title="Add media tiles">+ Add Media</button>
+    <button id="reseed-btn" title="AI proposes a new layout for this section">✨ AI Seed</button>
+    <button id="save-btn" class="primary">💾 Save</button>
+    <span id="save-state" class="badge"></span>
   </div>
-  <div class="row">
-    <div><label>W</label><input id="f-w" type="number"></div>
-    <div><label>H</label><input id="f-h" type="number"></div>
+
+  <!-- Section canvas (composition area) -->
+  <div id="stage-wrap">
+    <div id="stage" class="q-inner-canvas">
+      <div id="stage-bg-label">Select or add a section</div>
+    </div>
   </div>
-  <button class="del" id="delete">🗑 delete tile</button>
-</div>
-<script>
-"use strict";
-const WORLD={w:4000,h:4000}, MINZ=0.35, MAXZ=3.0;
-let TILES=[];
-const cam={x:2000,y:2000,zoom:1};
-const stage=document.getElementById('stage'), world=document.getElementById('world');
-const EMOJI={photo:'📷',video:'🎞️',audio:'🎙️',sphere:'🌐',scrap:'📓',gif:'🎞️'};
-const els=new Map();
 
-function loadTiles(src){
-  const data = JSON.parse(src || '[]');
-  TILES = data.map(t=>({...t, s:t.s||t.w||200, w:t.w||t.s||200, h:t.h||t.s||200}));
-  rebuild();
-}
-function rebuild(){
-  world.innerHTML=''; els.clear();
-  TILES.forEach(t=>buildTile(t));
-  layout();
-}
-function buildTile(t){
-  const el=document.createElement('div'); el.className='tile';
-  el.dataset.id=t.id;
-  const body=document.createElement('div'); body.className='body';
-  // animated images (gif) render as <img> which plays automatically
-  if(t.src && (t.type==='gif'||t.type==='photo'||t.type==='scrap')){
-    const img=document.createElement('img'); img.src=t.src; img.loading='lazy'; img.alt=t.title||t.id;
-    body.appendChild(img);
-  } else if(t.src && t.type==='video'){
-    const v=document.createElement('video'); v.src=t.src; v.muted=true; v.loop=true; v.playsInline=true; v.preload='metadata';
-    body.appendChild(v);
-    const pb=document.createElement('div'); pb.className='em'; pb.textContent='▶'; pb.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;background:rgba(0,0,0,.25);cursor:pointer';
-    pb.addEventListener('click',e=>{e.stopPropagation(); v.muted=false; v.loop=false; v.play(); pb.remove();});
-    body.appendChild(pb);
-  } else if(t.src && t.type==='audio'){
-    // audio tile: waveform-ish icon + a real <audio> element you can play
-    const ph=document.createElement('div'); ph.className='ph';
-    ph.innerHTML='<div class="em">🎙️</div><div>'+(t.title||'audio')+'</div>';
-    body.appendChild(ph);
-    const au=document.createElement('audio'); au.src=t.src; au.preload='metadata';
-    const pb=document.createElement('div'); pb.className='em'; pb.textContent='♪'; pb.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;background:rgba(0,0,0,.35);cursor:pointer';
-    pb.addEventListener('click',e=>{e.stopPropagation(); au.play(); pb.remove();});
-    body.appendChild(pb);
-    el.appendChild(au);
-  } else {
-    const ph=document.createElement('div'); ph.className='ph';
-    ph.innerHTML='<div class="em">'+(EMOJI[t.type]||'📦')+'</div><div>'+(t.type||'')+'</div>';
-    body.appendChild(ph);
-  }
-  el.appendChild(body);
-  const lb=document.createElement('div'); lb.className='label'; lb.textContent=t.title||t.id;
-  const id=document.createElement('div'); id.className='id'; id.textContent=t.id;
-  el.appendChild(lb); el.appendChild(id);
-  for(const h of ['se','nw']){
-    const hd=document.createElement('div'); hd.className='handle '+h; el.appendChild(hd);
-  }
-  world.appendChild(el); els.set(t.id,{el,t});
-  wire(el,t);
-}
-function wire(el,t){
-  el.addEventListener('pointerdown',e=>{
-    if(e.target.classList.contains('handle'))return;
-    e.stopPropagation();
-    select(t);
-    dragStart(e);
-  });
-  const se=el.querySelector('.handle.se'), nw=el.querySelector('.handle.nw');
-  se.addEventListener('pointerdown',e=>{e.stopPropagation();select(t);resizeStart(e,t,'se');});
-  nw.addEventListener('pointerdown',e=>{e.stopPropagation();select(t);resizeStart(e,t,'nw');});
-}
-/* ---- selection ---- */
-let selected=null;
-function select(t){
-  els.forEach(({el})=>el.classList.remove('selected'));
-  selected=t; els.get(t.id).el.classList.add('selected');
-  fillPanel(t);
-}
-/* ---- drag ---- */
-let drag=false,lx=0,ly=0,rz=false,rszT=null,rszDir=null,rszStartX=0,rszStartY=0,rszStartW=0,rszStartH=0;
-function dragStart(e){ drag=true; lx=e.clientX; ly=e.clientY; stage.classList.add('dragging'); stage.setPointerCapture(e.pointerId); }
-function resizeStart(e,t,dir){ rz=true; rszT=t; rszDir=dir; rszStartX=e.clientX; rszStartY=e.clientY; rszStartW=t.w; rszStartH=t.h; stage.setPointerCapture(e.pointerId); }
-stage.addEventListener('pointermove',e=>{
-  if(drag && !rz){
-    const dx=(e.clientX-lx)/cam.zoom, dy=(e.clientY-ly)/cam.zoom;
-    if(selected && e.buttons===1 && selected){ /* moving selected tile */
-      selected.x+=dx; selected.y+=dy; updatePanel(selected); layout();
-    } else { step(-dx,-dy); }
-    lx=e.clientX; ly=e.clientY;
-  } else if(rz && rszT){
-    const dx=(e.clientX-rszStartX)/cam.zoom, dy=(e.clientY-rszStartY)/cam.zoom;
-    if(rszDir==='se'){ rszT.w=Math.max(40,rszStartW+dx); rszT.h=Math.max(40,rszStartH+dy); }
-    else { rszT.w=Math.max(40,rszStartW-dx); rszT.h=Math.max(40,rszStartH-dy); rszT.x=rszT.x+dx/2; rszT.y=rszT.y+dy/2; }
-    updatePanel(rszT); layout();
-  }
-});
-stage.addEventListener('pointerup',()=>{drag=false;rz=false;stage.classList.remove('dragging');});
-/* background drag pans */
-stage.addEventListener('pointerdown',e=>{ if(e.target===stage||e.target===world||e.target.id==='grid'){ dragStart(e); if(selected){els.get(selected.id).el.classList.remove('selected');selected=null;hidePanel();} } });
-function step(dx,dy){ cam.x=((cam.x+dx)%WORLD.w+WORLD.w)%WORLD.w; cam.y=((cam.y+dy)%WORLD.h+WORLD.h)%WORLD.h; layout(); }
-function zoomAt(z,sx,sy){ const wx=cam.x+sx/cam.zoom, wy=cam.y+sy/cam.zoom; cam.zoom=Math.min(MAXZ,Math.max(MINZ,z)); cam.x=wx-sx/cam.zoom; cam.y=wy-sy/cam.zoom; layout(); }
-stage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(cam.zoom*Math.pow(1.0015,-e.deltaY),e.clientX,e.clientY);},{passive:false});
-function frameContent(){
-  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  for(const t of TILES){ minX=Math.min(minX,t.x-t.w/2);maxX=Math.max(maxX,t.x+t.w/2);minY=Math.min(minY,t.y-t.h/2);maxY=Math.max(maxY,t.y+t.h/2); }
-  const pad=320,w=(maxX-minX)+pad*2,h=(maxY-minY)+pad*2;
-  cam.zoom=Math.min(1,Math.max(MINZ,Math.min(innerWidth/w,innerHeight/h)));
-  const vw=innerWidth/cam.zoom,vh=innerHeight/cam.zoom;
-  cam.x=((minX+maxX)/2-vw/2); cam.y=((minY+maxY)/2-vh/2); layout();
-}
-/* world is scaled by cam.zoom and translated by -cam; tiles sit at world coords */
-function layout(){
-  const ox=-cam.x,oy=-cam.y;
-  world.style.transform='scale('+cam.zoom+') translate3d('+ox+'px,'+oy+'px,0)';
-  const vw=innerWidth/cam.zoom,vh=innerHeight/cam.zoom;
-  for(const [id,{el,t}] of els){
-    const tw=t.w||t.s||200, th=t.h||t.s||200;
-    el.style.left=(t.x-tw/2)+'px';
-    el.style.top=(t.y-th/2)+'px';
-    el.style.width=tw+'px'; el.style.height=th+'px';
-    const off=(t.x-tw/2)>cam.x+vw+100 || (t.x+tw/2)<cam.x-100 || (t.y-th/2)>cam.y+vh+100 || (t.y+th/2)<cam.y-100;
-    el.style.display=off?'none':'';
-    // pause video/audio when out of view
-    const m=el.querySelector('video,audio');
-    if(m && off && !m.paused) m.pause();
-  }
-  statusEl.textContent=TILES.length+' tiles';
-}
+  <!-- Right: tile inspector -->
+  <div id="inspector">
+    <h3>Tile Inspector</h3>
+    <div id="inspector-body">
+      <p class="muted">Select a tile to edit its position, size, shape, rotation, and layering.</p>
+    </div>
+  </div>
 
-/* ---- panel ---- */
-const panel=document.getElementById('panel');
-const statusEl=document.getElementById('status');
-function fillPanel(t){
-  f_title.value=t.title||''; f_cap.value=t.cap||''; f_type.value=t.type||'';
-  f_src.value=t.src||''; f_x.value=t.x; f_y.value=t.y; f_w.value=t.w; f_h.value=t.h;
-  panel.style.display='block';
-}
-function updatePanel(t){ f_x.value=t.x; f_y.value=t.y; f_w.value=t.w; f_h.value=t.h; }
-function hidePanel(){ panel.style.display='none'; }
-function bindPanel(){
-  const save=()=>{ if(!selected)return; selected.title=f_title.value; selected.cap=f_cap.value; selected.type=f_type.value||'photo'; selected.src=f_src.value||null; selected.x=+f_x.value; selected.y=+f_y.value; selected.w=+f_w.value; selected.h=+f_h.value; rebuild(); };
-  [f_title,f_cap,f_type,f_src].forEach(i=>i.addEventListener('input',()=>{ if(!selected)return; selected.title=f_title.value;selected.cap=f_cap.value;selected.type=f_type.value;selected.src=f_src.value||null; const e=els.get(selected.id); if(e){e.el.querySelector('.label').textContent=selected.title||selected.id;} }));
-  [f_x,f_y,f_w,f_h].forEach(i=>i.addEventListener('input',()=>{ if(!selected)return; selected.x=+f_x.value;selected.y=+f_y.value;selected.w=+f_w.value;selected.h=+f_h.value; layout(); }));
-}
-const f_title=document.getElementById('f-title'),f_cap=document.getElementById('f-cap'),f_type=document.getElementById('f-type'),f_src=document.getElementById('f-src'),f_x=document.getElementById('f-x'),f_y=document.getElementById('f-y'),f_w=document.getElementById('f-w'),f_h=document.getElementById('f-h');
-bindPanel();
-document.getElementById('delete').addEventListener('click',()=>{ if(!selected)return; TILES=TILES.filter(t=>t.id!==selected.id); els.delete(selected.id); selected=null; hidePanel(); rebuild(); });
-document.getElementById('viewall').addEventListener('click',frameContent);
-document.getElementById('add').addEventListener('click',()=>{ addTile('photo'); });
-document.getElementById('addgif').addEventListener('click',()=>{ addTile('gif'); });
-document.getElementById('addaudio').addEventListener('click',()=>{ addTile('audio'); });
-document.getElementById('import').addEventListener('click',async()=>{
-  let txt='';
-  if(navigator.clipboard&&navigator.clipboard.readText){ try{ txt=await navigator.clipboard.readText(); }catch(e){} }
-  if(!txt) txt=prompt('Paste quilt-tiles.json here:');
-  try{
-    const data=JSON.parse(txt); if(!Array.isArray(data)) throw new Error('not an array');
-    loadTiles(txt); frameContent(); statusEl.textContent='✓ imported '+data.length+' tiles';
-  }catch(e){ statusEl.textContent='✖ import failed: '+e.message; }
-});
-let uid=0;
-function addTile(type){
-  const t={id:'t'+(++uid),type,x:cam.x,y:cam.y,s:220,w:220,h:220,title:'New '+type,src:null,cap:''};
-  TILES.push(t); buildTile(t); select(t); layout();
-}
+  <!-- Media drawer (hidden until opened) -->
+  <div id="media-drawer">
+    <div class="drawer-head">
+      <h3>Media — click to add to section</h3>
+      <button id="drawer-close">✕</button>
+    </div>
+    <div id="drawer-grid"></div>
+  </div>
 
-/* ---- export ---- */
-document.getElementById('export').addEventListener('click',()=>{
-  const out=TILES.map(t=>{ const o={id:t.id,type:t.type,x:Math.round(t.x),y:Math.round(t.y)}; if(t.s&&t.w===t.s&&t.h===t.s)o.s=t.s; else {o.w=Math.round(t.w);o.h=Math.round(t.h);} if(t.src)o.src=t.src; if(t.title)o.title=t.title; if(t.cap)o.cap=t.cap; if(t.dur)o.dur=t.dur; return o; });
-  const json=JSON.stringify(out,null,1);
-  const blob=new Blob([json],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='quilt-tiles.json'; a.click();
-  navigator.clipboard&&navigator.clipboard.writeText(json);
-  statusEl.textContent='✓ exported '+TILES.length+' tiles (also copied to clipboard)';
-});
+  <div id="tool-hints">
+    <b>Select:</b> click tile &nbsp;·&nbsp; <b>Move:</b> drag &nbsp;·&nbsp; <b>Resize:</b> drag corner/edge handles &nbsp;·&nbsp; <b>Rotate:</b> drag the top handle &nbsp;·&nbsp; <b>Layer:</b> inspector &nbsp;·&nbsp; <b>Del:</b> delete tile
+  </div>
 
-/* ---- drag-drop media to add tiles ---- */
-stage.addEventListener('dragover',e=>e.preventDefault());
-stage.addEventListener('drop',e=>{
-  e.preventDefault();
-  for(const f of e.dataTransfer.files){
-    const type=f.type.startsWith('video')?'video':f.type.startsWith('image')?(f.name.match(/\.gif$/i)?'gif':'photo'):'photo';
-    const url=URL.createObjectURL(f);
-    const t={id:'t'+(++uid),type,x:cam.x,y:cam.y,s:240,w:240,h:240,title:f.name.split('.')[0],src:url,cap:'',_tmp:true};
-    TILES.push(t); buildTile(t); layout();
-  }
-});
+  <!-- Shared audio (editing preview) -->
+  <div id="q-audio-player"><span class="q-audio-label"></span><audio controls></audio></div>
 
-/* ---- load embedded tiles from the quilt (passed via sessionStorage or URL fallback) ---- */
-let embedded = sessionStorage.getItem('quiltTiles');
-if (!embedded) {
-  // Fallback: try URL param (for direct editor.html?tiles=... links)
-  const params = new URLSearchParams(location.search);
-  embedded = params.get('tiles');
-}
-loadTiles(embedded);
-frameContent();
-</script>
+  <script src="media/vendor/model-viewer.min.js" type="module"></script>
+  <script src="assets/js/renderer.js"></script>
+  <script src="assets/js/editor.js"></script>
 </body>
 </html>
