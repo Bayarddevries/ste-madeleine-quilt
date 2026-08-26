@@ -1,16 +1,16 @@
 /* Ste. Madeleine Quilt — Free-pan 2D canvas viewer.
-   ENDLESS horizontal wrap (torus): each content tile is mounted ONCE; when the
-   horizontal camera (tx) wraps past one content width (W), every tile's left is
-   shifted by ±W (an "epoch" shift) so the visible window always sits over a
-   full copy of the quilt. This avoids triplicating every tile 3× (which ballooned
-   the DOM to ~2,700 nodes). Vertical stays finite.
-   DOM-weight notes: the ~693 'texture' backing tiles are NOT built as DOM nodes —
-   the backing is a single repeating CSS background on #surface (zero backing
-   nodes). Photos stay as DOM tiles mounted once, lazy-loaded via
-   IntersectionObserver so the initial page doesn't fire all image requests at
-   once. Pan, zoom, video autoplay (cap 2), and the lazy 3D-scan model-viewer are
-   all preserved. Uses the shared renderer (WYSIWYG with the editor).
-*/(function () {
+   ENDLESS horizontal wrap (torus): the quilt's content is tiled 3× side-by-side
+   on a surface of width 3W (W = one copy of the content width). The horizontal
+   camera (tx) is wrapped modulo W, so panning far left or right loops back
+   around seamlessly — the content repeats every W so the snap lands on
+   identical pixels and there is no visible seam or gap. Vertical stays finite.
+   Images are lazy-mounted via IntersectionObserver: only tiles approaching the
+   viewport actually load their <img src>, so the initial page doesn't fire all
+   ~200 image requests at once. Pan, zoom, video autoplay (cap 2), and the lazy
+   3D-scan model-viewer are all preserved. Uses the shared renderer (WYSIWYG
+   with the editor).
+*/
+(function () {
   'use strict';
 
   const viewport = document.getElementById('viewport');
@@ -23,43 +23,23 @@
   let lastX = 0, lastY = 0;
   let pinchDist = null;
   let W = 0;                   // content width of ONE copy (the wrap period)
-  const PAD = 200;             // padding around the quilt bbox
-  let epoch = 0;               // how many W's the tiles have been shifted
-  let shiftEpoch = 0;
 
   function setTransform() {
     surface.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
   }
 
-  // Shift every tile's left by epoch*W so the whole quilt re-aligns with the
-  // camera after a wrap (tiles move by a multiple of W => identical pixels).
-  function shiftTiles() {
-    const off = epoch * W;
-    surface.querySelectorAll('.q-tile').forEach((t) => {
-      const bl = parseFloat(t.dataset.bl);
-      if (isFinite(bl)) t.style.left = (bl + off) + 'px';
-    });
-  }
-
-  // Keep the camera window inside the quilt's content: tx stays within
-  // [PAD, W - PAD - viewportWidth] so the whole viewport is always over one
-  // copy of the content. When tx crosses a boundary, subtract/add W and bump
-  // the epoch (shifting tiles by W), which is seamless because content repeats.
+  // Wrap the horizontal camera into [0, W). Because the content repeats every
+  // W pixels, wrapping to a whole-multiple-of-W offset shows identical pixels,
+  // so the loop-back is seamless (no jump, no seam).
   function wrapTx() {
     if (W <= 0) return;
-    const vw = viewport.clientWidth || 0;
-    const lo = PAD, hi = W - PAD - vw;
-    if (hi <= lo) return;               // degenerate (tiny viewport / huge padding)
-    let guard = 0;
-    while (tx > hi && guard++ < 8) { tx -= W; epoch += 1; }
-    while (tx < lo && guard++ < 16) { tx += W; epoch -= 1; }
-    if (epoch !== shiftEpoch) { shiftEpoch = epoch; shiftTiles(); }
-    setTransform();
+    const w = ((tx % W) + W) % W;
+    if (w !== tx) { tx = w; setTransform(); }
   }
 
   function centerView() {
     const vw = viewport.clientWidth, vh = viewport.clientHeight;
-    tx = PAD;   // start at the quilt's left content edge; wrap handles looping
+    tx = 0;   // start at the left edge; wrap handles looping thereafter
     ty = vh / 2 - (surface.dataset.sh || 1200) / 2;
     setTransform();
   }
@@ -199,7 +179,7 @@
     }
   }
 
-  // ---- Build surface from layout (single copy per tile; wrap via epoch shift) ----
+  // ---- Build surface from layout (tiled 3× horizontally) ----
   async function build() {
     const res = await fetch('layout.json');
     const data = await res.json();
@@ -212,16 +192,15 @@
       });
     });
     if (!isFinite(minX)) { minX = 0; minY = 0; maxX = 1600; maxY = 1200; }
-    W = maxX - minX + PAD * 2;                  // one copy's width = wrap period
-    const H = maxY - minY + PAD * 2;
-    // ONE copy wide (not 3×): the wrap is done by shifting tiles, not duplicating them.
-    surface.style.width = W + 'px';
+    const pad = 200;
+    W = maxX - minX + pad * 2;                    // one copy's width  = wrap period
+    const H = maxY - minY + pad * 2;
+    surface.style.width = (W * 3) + 'px';         // 3 copies side by side
     surface.style.height = H + 'px';
-    surface.dataset.sw = W;
+    surface.dataset.sw = W * 3;
     surface.dataset.sh = H;
 
-    // Cloth backing as a single repeating background — ZERO backing DOM nodes.
-    // Replaces the ~693 'texture' tiles that used to back the quilt.
+    // Cloth backing: single repeating patchwork background (zero DOM nodes).
     surface.style.backgroundImage = "url('assets/img/backing-patchwork.jpg')";
     surface.style.backgroundRepeat = 'repeat';
     surface.style.backgroundSize = '720px 720px';
@@ -238,27 +217,29 @@
     data.sections.forEach((s) => {
       (s.tiles || []).forEach((t) => {
         // 'texture' tiles are the backing cloth, now drawn by the surface
-        // background — skip them entirely (no DOM, no image fetch).
+        // background (assets/img/backing-patchwork.jpg) — skip to keep DOM light.
         if (t.type === 'texture') return;
-        const baseLeft = t.x - minX + PAD;
-        const baseTop = t.y - minY + PAD;
-        const tile = window.QuiltRenderer.renderTile(t);
-        tile.style.left = baseLeft + 'px';
-        tile.style.top = baseTop + 'px';
-        tile.dataset.bl = baseLeft;   // base left, re-derived on each wrap shift
-        // tag for lightbox
-        tile.dataset.caption = t.caption || t.title || '';
-        tile.dataset.src = t.src || '';
-        tile.dataset.type = t.type || 'photo';
-        surface.appendChild(tile);
+        const baseLeft = t.x - minX + pad;
+        const baseTop = t.y - minY + pad;
+        // three copies: left, centre, right — enables seamless loop
+        for (let k = 0; k < 3; k++) {
+          const tile = window.QuiltRenderer.renderTile(t);
+          tile.style.left = (baseLeft + k * W) + 'px';
+          tile.style.top = baseTop + 'px';
+          // tag for lightbox
+          tile.dataset.caption = t.caption || t.title || '';
+          tile.dataset.src = t.src || '';
+          tile.dataset.type = t.type || 'photo';
+          surface.appendChild(tile);
 
-        if (t.type === 'photo') {
-          // heavy image: defer fetch until the tile nears the viewport
-          deferImage(tile);
-          io.observe(tile);
-        } else {
-          // video / audio / scan / text are few and light: mount now
-          mountTile(tile);
+          if (t.type === 'photo') {
+            // heavy image: defer fetch until the tile nears the viewport
+            deferImage(tile);
+            io.observe(tile);
+          } else {
+            // video / audio / scan / texture / text are few and light: mount now
+            mountTile(tile);
+          }
         }
       });
     });
