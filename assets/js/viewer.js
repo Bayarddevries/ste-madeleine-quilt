@@ -170,11 +170,11 @@
     // cloth backing as repeating CSS background
     surface.style.backgroundImage = "url('assets/img/backing-patchwork.jpg')";
     surface.style.backgroundRepeat = 'repeat';
-    surface.style.backgroundSize = '720px 720px';
+    surface.style.backgroundSize = '1280px 1280px';
 
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => { if (en.isIntersecting) { mountTile(en.target); io.unobserve(en.target); } });
-    }, { root: viewport, rootMargin: '50% 50% 50% 50%', threshold: 0 });
+    }, { root: viewport, rootMargin: '100% 100% 100% 100%', threshold: 0 });
 
     data.sections.forEach((s) => {
       (s.tiles || []).forEach((t) => {

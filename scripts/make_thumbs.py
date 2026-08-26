@@ -12,8 +12,8 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-THUMB_W = 700          # max width for quilt tiles
-QUALITY = 78
+THUMB_W = 480          # max width for quilt tiles (smaller/faster load)
+QUALITY = 68           # lighter JPEG -> ~30-70KB per thumb
 
 def main():
     src_dirs = [ROOT / 'media' / 'weekend-2026', ROOT / 'media' / 'textures']
