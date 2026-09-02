@@ -3,3 +3,5 @@ media/weekend-2026/
 media/memory-wall/
 .venv-build/
 layout.json.bak
+.hermes/
+excalidraw-excalidraw-0.18.1.tgz

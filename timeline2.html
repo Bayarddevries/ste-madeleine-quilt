@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ste. Madeleine — Timeline</title>
+<style>
+  :root {
+    --bg: #1a120b;
+    --bg-deep: #120c06;
+    --panel: #241a10;
+    --panel-raised: #2e2215;
+    --text: #e8dcc0;
+    --text-dim: #b8a888;
+    --gold: #c9a227;
+    --crimson: #b3362a;
+    --border: #3a2c1c;
+    --track: #4a3a28;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: radial-gradient(circle at 50% 0%, #241a10 0%, #120c06 100%);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 60px 32px 80px; position: relative; }
+
+  .page-head { text-align: center; margin-bottom: 70px; }
+  .page-head .kicker {
+    font-family: 'Barlow Semi Condensed', 'Barlow Condensed', sans-serif;
+    letter-spacing: .28em; text-transform: uppercase; font-size: 13px; color: var(--gold);
+  }
+  .page-head h1 {
+    font-family: 'Barlow Semi Condensed', 'Barlow Condensed', sans-serif;
+    font-weight: 600; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: .04em;
+    margin-top: 10px; color: var(--text);
+  }
+  .page-head .sub { margin-top: 12px; color: var(--text-dim); font-style: italic; font-size: 1.05rem; }
+
+  /* spine */
+  .timeline { position: relative; }
+  .timeline::before {
+    content:''; position:absolute; top:0; bottom:0; left:0; width:3px;
+    background: linear-gradient(180deg, var(--gold) 0%, var(--crimson) 55%, var(--gold) 100%);
+    opacity:.45;
+  }
+
+  .entry { position: relative; padding-left: 48px; margin-bottom: 56px; }
+  .entry:last-child { margin-bottom: 0; }
+
+  .dot {
+    position:absolute; left:-14px; top:6px; width:25px; height:25px; border-radius:50%;
+    background: var(--gold); border:4px solid var(--bg-deep);
+    box-shadow: 0 0 14px rgba(201,162,39,.55);
+  }
+
+  .card {
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-left:4px solid var(--crimson);
+    border-radius: 14px;
+    padding: 22px 26px;
+    box-shadow: 0 6px 30px rgba(0,0,0,.45);
+  }
+  .entry:nth-child(even) .card { border-left-color: var(--gold); }
+
+  .year {
+    font-family: 'Barlow Semi Condensed', 'Barlow Condensed', sans-serif;
+    font-weight: 600; font-size: 34px; color: var(--gold); letter-spacing: .02em;
+  }
+  .text { margin-top: 6px; font-size: 1.08rem; color: var(--text); }
+
+  .entry .img {
+    margin-top: 14px; width:100%; max-width: 420px; aspect-ratio: 4/3; border-radius:10px;
+    background: var(--panel-raised); border:1px dashed var(--border);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--text-dim); font-size: 13px; font-family: 'Barlow Semi Condensed', sans-serif;
+    letter-spacing:.06em;
+  }
+
+  .foot { text-align:center; margin-top:70px; color:var(--text-dim); font-size:13px; font-style:italic; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 40px 20px 60px; }
+    .entry { padding-left: 40px; }
+    .card { padding: 18px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-head">
+    <div class="kicker">Ste. Madeleine</div>
+    <h1>From Ashes to Honour</h1>
+    <div class="sub">A timeline of displacement, resistance, and reclamation</div>
+  </div>
+
+  <div class="timeline" id="timeline"></div>
+
+  <div class="foot">Dedicated to the Red River Métis of Ste. Madeleine — displaced, remembered, reclaimed.</div>
+</div>
+
+<script>
+  // Data extracted from the Figma timeline (sorted chronologically).
+  // Font family from Figma: Barlow Semi Condensed.
+  const ENTRIES = [
+    { year: "1870", text: "Métis families, pushed out of Red River by the Wolseley expedition, settle at Ste. Madeleine" },
+    { year: "1885", text: "More families arrive after the North-West Resistance, seeking land that won't be taken again" },
+    { year: "1913", text: "The community builds a log chapel" },
+    { year: "1922", text: "A one-room school opens" },
+    { year: "1935", text: "The federal Prairie Farm Rehabilitation Act passes; Ste. Madeleine is designated as community pasture" },
+    { year: "1938", text: "The municipality orders the families out; homes are burned, dogs shot. Joe Venne and others confront the crew with rifles and save the church. The Vermette family moves in to guard it" },
+    { year: "1958", text: "A census counts 170 Métis still in the Binscarth area" },
+    { year: "2016", text: "The church bell is returned to the cemetery; two books documenting the community are published" },
+    { year: "2024", text: "An MOU returns 100 acres to the Manitoba Métis Federation; a new cross is raised in the cemetery" },
+    { year: "2026", text: "The community gathers on the land for Ste. Madeleine Métis days to celebrate the reclamation of this important land." }
+  ];
+
+  const tl = document.getElementById('timeline');
+  ENTRIES.forEach((e, i) => {
+    const el = document.createElement('div');
+    el.className = 'entry';
+    el.innerHTML = `
+      <div class="dot"></div>
+      <div class="card">
+        <div class="year">${e.year}</div>
+        <div class="text">${e.text}</div>
+        <div class="img" data-year="${e.year}">image slot</div>
+      </div>`;
+    tl.appendChild(el);
+  });
+</script>
+</body>
+</html>
