@@ -1,129 +1,119 @@
-# HANDOFF — Ste. Madeleine timeline (2026-09-01)
+# Ste. Madeleine Timeline — Session Handoff
 
-> **Read this FIRST when resuming.** Current state, geometry constants, and next
-> steps. Companion files: `README.md` (layout), `timeline-plan.md` (content/sources),
-> `references/pattern-library.md` (typography), `scripts/penpot_mcp.py` (MCP client).
+**Date:** 2026-09-04
+**Session ID:** `20260902_145753_5a0100` (search Hermes: `session_search(query='ste madeleine timeline', session_id='20260902_145753_5a0100')`)
 
-## Where the project stands
+---
 
-- **Design surface:** Penpot board (browser, free) at `https://design.penpot.app`.
-  Timeline board: 1440×4119, light parchment `#f0e9db`, true-scale 10-entry timeline.
-- **Design is DONE through the timeline phase.** Entries laid out, photos placed,
-  pull quotes / ghost year / era banners in the empty bands, years aligned.
-- **HTML build has NOT started.** `timeline2.html` is an early Figma-era build —
-  it is NOT the current design. Next work item is building the real HTML from Penpot.
-- Old quilt viewer (`index.html` / `layout.json` / editor) is superseded; kept as reference.
+## Project
 
-## Penpot MCP access — IMPORTANT
+Build a heritage timeline webpage for the Ste. Madeleine Métis community, designed in Penpot, exported as a self-contained HTML page for an exhibit.
 
-- Client: `scripts/penpot_mcp.py` (reads token from `~/.hermes/config.yaml` → `mcp_servers.penpot.url`).
-- **KNOWN ISSUE:** token in config was reported stale today ("No Penpot instance
-  connected for user token"). Bayard must have the Penpot tab open with the MCP
-  plugin connected; if the error persists, regenerate the MCP key in Penpot
-  (Integrations → MCP) and update `mcp_servers.penpot.url` in config.yaml.
-- Commands: `python3 scripts/penpot_mcp.py shapes|timeline|exec '<js>'|export <id> <out.png>`
-- Plugin JS runs inside the Penpot editor context (`penpot`, `penpot.currentPage.root`).
-- The board is found by heuristic: a board with a thin tall rectangle (spine) AND
-  ≥5 child boards named like "Component". If that changes, adapt FIND_TIMELINE.
+**Working directory:** `~/ste-madeleine-quilt/`
+**Local server:** `python3 serve.py 8090` (currently running, pid logged separately)
+**Public tunnel:** `https://pop-os.tail4625c0.ts.net/` proxies to `localhost:8090` (Tailscale funnel running, may need restart)
 
-## Timeline geometry constants (VERIFIED)
+---
 
-```
-Board:           1440 × 4119, fill #f0e9db (parchment)
-True scale:      23px / year, 1870 @ y=220 → 2026 @ y=3808
-Spine:           dots at x=-2024 (centerline); spine rect ~22px wide centered x=-1997
-Left cards:      x=-2502 (card left edge), right edge toward spine
-Right cards:     x=-1976 (card left edge at spine gap)
-Card-spine gap:  48px both sides
-Card width:      430px
-Card padding:    34px L/R, 22px top, 14px year↔caption gap, 26px bottom
-Years:           140px box, pinned 74px from spine BOTH sides
-                 (left year right-edge -2090, right year left-edge -1950)
-                 font Barlow Semi Condensed SemiBold, 44px, weight 700
-Photos:          left inner edge -2072, right inner edge -1976, max height 640px,
-                 aspect preserved
-```
+## Where We Are
 
-## Timeline entries (10, top→bottom)
+The HTML is built (`timeline3.html`, ~40KB) using Penpot's own HTML export as the source — real text, real positions, real structure. Photos are mapped back onto the photo rectangles. Woodgrain tile is referenced as a background. Animations defined but not invasive.
 
-| Year | Side | Caption (abbrev.) |
-|------|------|--------------------|
-| 1870 | left | Métis families pushed out of Red River settle at Ste. Madeleine |
-| 1885 | ?    | Resistance / Red River Métis context |
-| 1913 | ?    | Community builds a log chapel |
-| 1922 | ?    | One-room school opens |
-| 1935 | ?    | Devastation begins (PFRA / drought era) |
-| 1938 | ?    | Displacement, homes burned, church saved by Joe Venne |
-| 1958 | ?    | Census / the long wait begins |
-| 2016 | ?    | Land returned to MMF, bell return |
-| 2024 | ?    | MOU July 2024 |
-| 2026 | ?    | CCAP / reclamation weekend |
+**What works (verified):**
+- `timeline3.html` exists with 9 timeline entry cards, 1 spine, 1 ghost year, 2 banners, 1 credits block
+- All 13 photos from `media/thumbs/` are mapped to their Penpot rectangles
+- 26 text elements with real content from Penpot export
+- Spine (vertical line) at correct position
+- Woodgrain background with fallback
+- Accessibility: `prefers-reduced-motion` respected
 
-(Side alternation confirmed; exact per-entry side in the Penpot board — re-read before building.)
+**What's broken / not delivered:**
+- User reports the page "doesn't look anything like Penpot" and "looks even worse" — multiple iterations did not satisfy
+- The agent's vision tools (vision_analyze, browser_exec) cannot connect to localhost for visual QA
+- Tailscale public URL does work for live viewing IF the user can reach it remotely, but user is on Telegram without remote PC access
+- Woodgrain tile (`media/raw/woodgrain-tile.jpg`) is 2880×4440 TIFF mislabeled as JPG — needs Photoshop crop to 1440×2220 per `docs/woodgrain-tile-workflow.md`
+- The actual `vision_analyze` and `browser_exec` tools have guardrails (private URL block, wrapper payload bug) that prevent the agent from self-verifying
 
-## Typography elements placed in the Wait band & gaps (Option A)
+---
 
-```
-Pull quotes:      EB Garamond, rust #a83c32, 34px; attribution #6b4a2a, 22px
-                  placed on cards' outer rail (right x=SPINE+48, left x=SPINE-48-430)
-  - Elders quote   right, y≈640/930    "They always considered Ste. Madeleine, with its log cabins..."
-  - Joe Venne      right, y≈4700/5050  "Well then, in 1938, we were asked by the municipality to move out..."
-  - Gail Welburn   left,  y≈6900/7260  "My grandfather was 27 when his dog was shot and his home was burnt..."
-  - Chartrand      right, y≈9380/9530  "We have been working toward this for a long time."
+## The Core Problem (Critical Context for New Agent)
 
-Ghost year:       1958, Barlow Semi Condensed 560px weight 700, #3a2c1c,
-                  opacity 0.07, centered on spine, y=6900
-Era banners:      "GENERATIONS OF WAITING" 46px weight 700 #b3362a, y≈7260
-                  "1958 – 2016" 30px weight 600 #6b4a2a, y≈7350 (both centered on spine)
-```
+**The agent cannot see its own work.** Vision tools fail on local dev servers, browser navigation is blocked to localhost, and headless Chrome from subprocess can take screenshots but vision analysis of those screenshots returned only wrapper payloads (not real descriptions) during this session. The Tailscale public tunnel works but vision analysis of public-URL screenshots also has been unreliable.
 
-## Woodgrain / grave-wood texture
+This means: **the user has been the only one able to verify the page renders correctly.** Every iteration was "I made changes, you check, you say it's wrong, I make more changes, you check again." The user got frustrated with the cycle and ended the session.
 
-- The wood texture is the photo of a grave at Ste. Madeleine — currently the board
-  fill was swapped OUT (to parchment) so black line/dots read on screen.
-- **Do NOT stretch it** in HTML — it blurs. Tile it: CSS `background-repeat: repeat`
-  (seamless repeat every ~2220px source tile).
-- To recover the original texture bytes: read board fill `fillImage.data()` via
-  `scripts/penpot_mcp.py exec` (returns Uint8Array → base64) and save to `media/`.
-  Alternatively the user re-uploads the original grave-wood photo.
+**Do NOT keep rebuilding without solving the visual verification problem first.** The two viable paths:
+1. **Get vision/browser tools working** — vision_analyze needs to actually dispatch to vision model; browser_exec needs a localhost allowlist. Both fixes live in the parent Hermes dispatcher (not in user-editable space from this session).
+2. **Send self-contained HTML to the user** — single file with all images base64-embedded. No server needed. User can open in any browser anywhere.
 
-## Fonts
+---
 
-- Vendored in repo: ONLY `media/barlow-condensed-regular.ttf`.
-- HTML build needs: **Barlow Regular** (sign-matched wordmark), **Barlow Semi
-  Condensed SemiBold** (years), **Georgia** (body — free system font, no vendoring).
-  Download Barlow family from Google Fonts (free) into `media/` before building.
-- EB Garamond exists in Penpot but is not needed in HTML if Georgia is the body face.
+## Decisions Already Made
 
-## Known API quirks (from today's sessions)
+- **Approach 1 selected** (PNG export + absolute HTML) over Approaches B/C/D
+- **No 2016 card** — removed (no source material)
+- **4px spacing grid** approved
+- **Attribution format:** full book title in credits block at bottom; per-quote attribution has section/page context but NO subtitle (overflow risk at 22px Garamond)
+- **Sources:** Z&Z book (Zeilig & Zeilig, *Ste. Madeleine: Community Without a Town — Métis Elders in Interview*, Pemmican Publications, 1987) + MMF modern quotes with speaker/date
+- **Font substitutes:** Noto Serif (not EB Garamond, not installed); Barlow Condensed for years/banners
+- **Reveal animation disabled** because IntersectionObserver + headless screenshot = invisible content; animations kept as CSS only
+- **Photo source:** `media/thumbs/` (Penpot rectangles have no image fills, only inner textures)
 
-- `fontWeight: 800` is rejected — only 200/300/400/600/700/900.
-- `growType: 'auto-height'` does NOT auto-grow created text; `resize(w, h)` explicitly.
-- Text `width` reads as ~1px right after create with auto-width — set x/y, then
-  RE-READ in a second call for the real width (async reflow).
-- Cloudflare blocks urllib's default UA — the client sends a browser UA.
-- Vision tool can't read /tmp paths — copy exports into `~/.hermes/cache/images/` first.
-- Browser tool refuses localhost — validate HTML via headless Chrome `--dump-dom`.
+---
 
-## Next steps (pickup order)
+## Files & Locations
 
-1. **Reconnect Penpot MCP** (see above) — verify with `python3 scripts/penpot_mcp.py timeline`.
-2. **Read the live board** via exec: dump entries (year/caption/dot/card coords),
-   photos (x/y/w/h), texts (quotes/banners/ghost), and the board fill image bytes.
-3. **Recover the woodgrain** bytes → `media/woodgrain.jpg`.
-4. **Vendor Barlow Regular + Semi Condensed SemiBold** (Google Fonts, free).
-5. **Build `timeline3.html`** — faithful rendering: true scale 23px/yr,
-   1870@220→2026@3808, alternating cards, woodgrain tiled sharp behind (CSS repeat),
-   quotes/banners/ghost at their real y positions, sign wordmark header.
-   Serve via `serve.py`, verify with headless Chrome, view via Tailscale URL.
-6. **Landing page** next (design in Penpot, build like `figma_landing_to_html.py` pattern).
-7. Ask Bayard about git remote for backup (repo has none).
+**Verified data sources:**
+- `~/ste-madeleine-quilt/timeline3.html` — current build (40KB)
+- `~/ste-madeleine-quilt/media/exports/` — 51 PNGs (15 photo + 9 year + 26 text)
+- `~/ste-madeleine-quilt/media/thumbs/` — 14 original photos
+- `~/ste-madeleine-quilt/media/raw/woodgrain-source.tif` — 1440×2220 woodgrain source
+- `~/ste-madeleine-quilt/media/raw/woodgrain-tile.jpg` — 2880×4440 (needs crop)
+- `~/ste-madeleine-quilt/scripts/export_all.py` — re-runnable Penpot export
+- `~/ste-madeleine-quilt/scripts/build_timeline3.py` — current build script
+- `/tmp/shapes.json` — all Penpot shape positions
+- `/tmp/book-ocr/timeline_quotes.md` — 5,232 chars of pull quotes from Z&Z book
+- `~/ste-madeleine-quilt/docs/HANDOFF.md` — this file
+- `~/ste-madeleine-quilt/docs/woodgrain-tile-workflow.md` — 8-step Photoshop guide
 
-## Lessons learned (do not repeat)
+**Penpot HTML export:** `/home/bayarddevries/.hermes/cache/documents/doc_292fb9b7a276_html timeline`
 
-- **/tmp scripts vanish.** All one-off `penpot_*.py` in /tmp were wiped. Reusable
-  logic now lives in `scripts/penpot_mcp.py`. Keep everything in the repo.
-- Don't stretch the wood texture in HTML; tile it.
-- Don't judge aesthetics — Bayard is the visual authority; implement what he decides.
-- English only. NEVER reply in Chinese (repeated hard correction).
-- Real tested output over proposals; verify before reporting.
+**Workspace fix notes:** `~/workspace/tool-fixes.md`
+
+---
+
+## What To Try First in a New Session
+
+1. **Solve visual verification first** — don't repeat the loop. Either:
+   - Restart Hermes with vision/loopback tools working (user action required)
+   - Build a self-contained HTML with base64 images and send to user as Telegram file
+2. **If verifying works:** screenshot the current `timeline3.html`, describe what you see, fix specific issues
+3. **If woodgrain is missing:** the JPEG exists but is un-cropped. Either Photoshop per the workflow doc, or skip woodgrain and use parchment-only background
+
+---
+
+## Constraints
+
+- **No Chinese, no em dashes** (user preference)
+- **English only** (hard rule)
+- **Free tools only** — no paid APIs
+- **No reveal animation that hides content** in screenshots
+- **Heritage tone** — no bouncing/rotating animations
+- **Reduced motion respected**
+- **All animatable per user request:** "I want to be able to animate these things... move them into position"
+- **Display quality must "cut the mustard"** (user's words)
+
+---
+
+## Key User Messages (verbatim, for context)
+
+- "I want to be able to work in penpot or some design tool. I want you to be able to export in some way. Preferably just direct code then I want you to be able to take that code rework it so that it looks like the work that we did in pinpot review the work that you did confirm that it looks the way it should and then be able to send it to me right now."
+- "so how do we execute option 1" (Tailscale funnel — partial success, but vision still broken)
+- "I'm not on that PC !"
+- "Stop I want you to wrap this up. I don't think that you're going to be able to help out. I think that we're having context issues so I want you to document everything including the challenges we've had and give me the session number for reference so I can have a new agent pickup"
+
+---
+
+## Recovery
+
+To resume this work: `session_search(query='ste madeleine timeline', session_id='20260902_145753_5a0100')` will return this session. The new agent should read `~/ste-madeleine-quilt/docs/HANDOFF.md` first.
